@@ -22,7 +22,6 @@ LRESULT CGenericListView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT);
 
 	SetItemCount(m_Callback->GetItemCount());
-
 	return 0;
 }
 
@@ -31,8 +30,7 @@ LRESULT CGenericListView::OnDestroy(UINT, WPARAM, LPARAM, BOOL&) {
 		delete m_Callback;
 		m_Callback = nullptr;
 	}
-	DefWindowProc();
-	return 0;
+	return DefWindowProc();
 }
 
 LRESULT CGenericListView::OnGetDispInfo(int, LPNMHDR hdr, BOOL&) {

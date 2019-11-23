@@ -203,7 +203,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
+    <ClCompile Include="ExportsView.cpp" />
     <ClCompile Include="GenericListView.cpp" />
+    <ClCompile Include="ImportsView.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="PEExplorerV2.cpp" />
     <ClCompile Include="pch.cpp">
@@ -214,18 +216,22 @@
     </ClCompile>
     <ClCompile Include="PEParser.cpp" />
     <ClCompile Include="PEStrings.cpp" />
+    <ClCompile Include="SectionsView.cpp" />
     <ClCompile Include="SortHelper.cpp" />
     <ClCompile Include="SummaryView.cpp" />
     <ClCompile Include="View.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />
+    <ClInclude Include="ExportsView.h" />
     <ClInclude Include="GenericListView.h" />
+    <ClInclude Include="ImportsView.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="PEParser.h" />
     <ClInclude Include="PEStrings.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="SectionsView.h" />
     <ClInclude Include="SortHelper.h" />
     <ClInclude Include="SummaryView.h" />
     <ClInclude Include="View.h" />
@@ -248,6 +254,7 @@
     <Image Include="res\folder_open.ico" />
     <Image Include="res\info.ico" />
     <Image Include="res\method-export.ico" />
+    <Image Include="res\method-friend.ico" />
     <Image Include="res\method-import.ico" />
     <Image Include="res\open.ico" />
     <Image Include="res\PEExplorerV2.ico" />

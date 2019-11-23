@@ -127,9 +127,9 @@ CString PEStrings::DllCharacteristicsToString(DllCharacteristics ch) {
 
 }
 
-CString PEStrings::ToHex(DWORD value) {
+CString PEStrings::ToHex(DWORD value, bool leadingZero) {
 	CString result;
-	result.Format(L"0x%X", value);
+	result.Format(leadingZero ? L"0x%08X" : L"0x%X", value);
 	return result;
 }
 
@@ -142,11 +142,11 @@ CString PEStrings::ToHex(ULONGLONG value) {
 CString PEStrings::ToMemorySize(ULONGLONG size) {
 	CString result;
 	result.Format(L"0x%llX", size);
-	if (size < 1 << 10)
+	if (size < 1 << 14)
 		result.Format(L"%s (%u B)", (PCWSTR)result, size);
-	else if (size < 1 << 20)
+	else if (size < 1 << 23)
 		result.Format(L"%s (%u KB)", (PCWSTR)result, size >> 10);
-	else if (size < 1 << 30)
+	else if (size < 1LL << 33)
 		result.Format(L"%s (%u MB)", (PCWSTR)result, size >> 20);
 	else
 		result.Format(L"%s (%u GB)", (PCWSTR)result, size >> 30);

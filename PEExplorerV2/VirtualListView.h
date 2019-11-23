@@ -24,7 +24,10 @@ protected:
 		auto len = ::wcslen(text);
 		auto list = static_cast<T*>(this);
 
-		int selected = list->GetSelectedIndex();
+		if (list->GetSelectedCount() == 0)
+			return 0;
+
+		int selected = list->GetNextItem(-1, LVIS_SELECTED);
 		int start = selected + 1;
 		int count = list->GetItemCount();
 		for (int i = start; i < count + start; i++) {

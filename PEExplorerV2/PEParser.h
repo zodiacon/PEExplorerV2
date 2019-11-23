@@ -3,6 +3,8 @@
 struct ExportedSymbol {
 	std::string Name;
 	std::string UndecoratedName;
+	std::string ForwardName;
+	DWORD Address;
 	unsigned short Ordinal;
 };
 
@@ -92,6 +94,7 @@ enum class ControlFlowGuardFlags {
 };
 
 enum class SectionFlags : unsigned {
+	None = 0,
 	NoPad = 8,
 	Code = 0x20,
 	InitializedData = 0x40,
@@ -112,6 +115,7 @@ enum class SectionFlags : unsigned {
 	Read = 0x40000000,
 	Write = 0x80000000,
 };
+DEFINE_ENUM_FLAG_OPERATORS(SectionFlags);
 
 enum class OptionalHeaderMagic : short {
 	PE32 = 0x10b,
@@ -159,6 +163,8 @@ public:
 	}
 
 private:
+	unsigned RvaToFileOffset(unsigned rva) const;
+
 	PLOADED_IMAGE _image;
 };
 

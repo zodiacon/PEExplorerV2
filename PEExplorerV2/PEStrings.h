@@ -12,7 +12,7 @@ struct PEStrings abstract final {
 	static CString Sec1970ToString(DWORD secs);
 	static CString CharacteristicsToString(ImageCharacteristics ch);
 	static CString DllCharacteristicsToString(DllCharacteristics ch);
-	static CString ToHex(DWORD value);
+	static CString ToHex(DWORD value, bool leadingZero = false);
 	static CString ToHex(ULONGLONG value);
 	static CString ToMemorySize(ULONGLONG size);
 };

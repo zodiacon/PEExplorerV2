@@ -41,6 +41,7 @@ const IMAGE_SECTION_HEADER* PEParser::GetSectionHeader(ULONG section) const {
 	return &_image->Sections[section];
 }
 
+
 const IMAGE_DATA_DIRECTORY* PEParser::GetDataDirectory(int index) const {
 	if (!IsValid() || index < 0 || index > 15)
 		return nullptr;
@@ -66,7 +67,7 @@ std::vector<ExportedSymbol> PEParser::GetExports() const {
 	char undecorated[1 << 10];
 	auto ordinalBase = data->Base;
 
-	for (DWORD i = 0; i < data->NumberOfFunctions; i++) {
+	for (DWORD i = 0; i < data->NumberOfNames; i++) {
 		ExportedSymbol symbol;
 		if (names) {
 			auto offset = *(ULONG*)(names + i * 4);
@@ -74,8 +75,18 @@ std::vector<ExportedSymbol> PEParser::GetExports() const {
 			if (::UnDecorateSymbolName(symbol.Name.c_str(), undecorated, sizeof(undecorated), 0))
 				symbol.UndecoratedName = undecorated;
 		}
+		auto address = *(DWORD*)((PBYTE)functions + i * 4);
+		symbol.Address = address;
+		auto offset = RvaToFileOffset(address);
+		if (offset > dir->VirtualAddress&& offset < dir->VirtualAddress + dir->Size) {
+			symbol.ForwardName = (PCSTR)GetAddress(address);
+		}
+
 		if (ordinals) {
 			symbol.Ordinal = *(USHORT*)(ordinals + i * 2);
+		}
+		else {
+			symbol.Ordinal = 0xffff;
 		}
 		exports.push_back(std::move(symbol));
 	}
@@ -183,4 +194,14 @@ SubsystemType PEParser::GetSubsystemType() const {
 
 CString PEParser::GetFileName() const {
 	return _image ? CString(_image->ModuleName) : L"";
+}
+
+unsigned PEParser::RvaToFileOffset(unsigned rva) const {
+	auto sections = _image->Sections;
+	for (int i = 0; i < GetSectionCount(); ++i) {
+		if (rva >= sections[i].VirtualAddress && rva < sections[i].VirtualAddress + _image->Sections[i].Misc.VirtualSize)
+			return sections[i].PointerToRawData + rva - sections[i].VirtualAddress;
+	}
+
+	return rva;
 }

@@ -51,6 +51,15 @@
     <ClCompile Include="SummaryView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="ExportsView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="SectionsView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="ImportsView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainFrm.h">
@@ -84,6 +93,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SummaryView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ExportsView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="SectionsView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ImportsView.h">
       <Filter>Views</Filter>
     </ClInclude>
   </ItemGroup>
@@ -149,6 +167,9 @@
     </Image>
     <Image Include="res\folder_open.ico">
       <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\method-friend.ico">
+      <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

@@ -7,6 +7,10 @@
 #include "View.h"
 #include "MainFrm.h"
 #include "GenericListView.h"
+#include "SummaryView.h"
+#include "ExportsView.h"
+#include "SectionsView.h"
+#include "ImportsView.h"
 
 const DWORD ListViewDefaultStyle = WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA | LVS_SHOWSELALWAYS;
 
@@ -64,10 +68,88 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 			m_view.AddPage(*summary, L"Summary", 0, (PVOID)type);
 			break;
 		}
+
+		case TreeNodeType::Exports:
+		{
+			auto view = new ExportsView(m_Parser.get());
+			auto lv = new CGenericListView(view, true);
+			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
+			view->Init(*lv);
+			m_view.AddPage(*lv, L"Exports", 3, (PVOID)type);
+			break;
+		}
+
+		case TreeNodeType::Imports:
+		{
+			auto view = new ImportsView(m_Parser.get());
+			auto lv = new CGenericListView(view, true);
+			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
+			view->Init(*lv);
+			m_view.AddPage(*lv, L"Imports", 4, (PVOID)type);
+			break;
+		}
+
+		case TreeNodeType::Sections:
+		{
+			auto view = new SectionsView(m_Parser.get());
+			auto lv = new CGenericListView(view, true);
+			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
+			view->Init(*lv);
+			m_view.AddPage(*lv, L"Sections", 1, (PVOID)type);
+			break;
+		}
+
 	}
 }
 
+void CMainFrame::SwitchToTab(TreeNodeType type) {
+	for (int page = 0; page < m_view.GetPageCount(); page++)
+		if ((DWORD_PTR)m_view.GetPageData(page) == (DWORD_PTR)type) {
+			m_view.SetActivePage(page);
+			return;
+		}
+
+	// create a new page
+	CreateNewTab(type);
+}
+
+void CMainFrame::DoFileOpen(PCWSTR path) {
+	auto file = std::make_unique<PEParser>(CStringA(path));
+	if (!file->IsValid()) {
+		MessageBox(L"Error opening file.", L"PE Explorer", MB_ICONERROR);
+		return;
+	}
+
+	m_Parser = std::move(file);
+	m_FilePath = path;
+	m_FileName = m_FilePath.Mid(m_FilePath.ReverseFind(L'\\') + 1);
+	CString title;
+	title.LoadString(IDR_MAINFRAME);
+	SetWindowText(title + L" (" + m_FilePath + L")");
+	m_view.RemoveAllPages();
+
+	InitTree();
+}
+
+LRESULT CMainFrame::OnWindowClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int nActivePage = m_view.GetActivePage();
+	if (nActivePage != -1) {
+		m_view.RemovePage(nActivePage);
+	}
+	else
+		::MessageBeep((UINT)-1);
+	return 0;
+}
+
+LRESULT CMainFrame::OnWindowCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	m_view.RemoveAllPages();
+
+	return 0;
+}
+
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	DragAcceptFiles();
+
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	// attach menu
@@ -227,23 +309,9 @@ LRESULT CMainFrame::OnViewTreePane(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 LRESULT CMainFrame::OnFileOpen(WORD, WORD, HWND, BOOL&) {
 	CSimpleFileDialog dlg(TRUE, nullptr, nullptr, OFN_FILEMUSTEXIST | OFN_ENABLESIZING | OFN_EXPLORER,
-		L"Image Files (*.exe, *.dll, *.sys, *.ocx, *.efi)\0*.exe;*.dll;*.sys;*.efi;*.ocx\0All Files\0*.*\0", *this);
+		L"PE Files (*.exe, *.dll, *.sys, *.ocx, *.efi)\0*.exe;*.dll;*.sys;*.efi;*.ocx\0All Files\0*.*\0", *this);
 	if (dlg.DoModal() == IDOK) {
-		auto file = std::make_unique<PEParser>(CStringA(dlg.m_szFileName));
-		if (!file->IsValid()) {
-			MessageBox(L"Error opening file.", L"PE Explorer");
-			return 0;
-		}
-
-		m_Parser = std::move(file);
-		m_FilePath = dlg.m_szFileName;
-		m_FileName = dlg.m_szFileTitle;
-		CString title;
-		title.LoadString(IDR_MAINFRAME);
-		SetWindowText(title + L" (" + m_FilePath + L")");
-		m_view.RemoveAllPages();
-
-		InitTree();
+		DoFileOpen(dlg.m_szFileName);
 	}
 	return 0;
 }
@@ -262,15 +330,26 @@ LRESULT CMainFrame::OnFileClose(WORD, WORD, HWND, BOOL&) {
 
 LRESULT CMainFrame::OnTreeItemDoubleClick(int, LPNMHDR hdr, BOOL&) {
 	auto item = m_tree.GetSelectedItem();
-	// switch to the existing tab or create a new one
-	for (int page = 0; page < m_view.GetPageCount(); page++)
-		if ((DWORD_PTR)m_view.GetPageData(page) == item.GetData()) {
-			m_view.SetActivePage(page);
-			return 0;
-		}
+	SwitchToTab((TreeNodeType)item.GetData());
 
-	// create a new page
-	CreateNewTab((TreeNodeType)item.GetData());
+	return 0;
+}
+
+LRESULT CMainFrame::OnViewDataItem(WORD, WORD id, HWND, BOOL&) {
+	SwitchToTab((TreeNodeType) (id - ID_VIEW_SUMMARY + 1));
+	return 0;
+}
+
+LRESULT CMainFrame::OnDropFiles(UINT, WPARAM wParam, LPARAM, BOOL&) {
+	auto hDrop = reinterpret_cast<HDROP>(wParam);
+	auto count = ::DragQueryFile(hDrop, -1, nullptr, 0);
+	if (count != 1)
+		return 0;
+
+	WCHAR path[MAX_PATH];
+	if (::DragQueryFile(hDrop, 0, path, MAX_PATH)) {
+		DoFileOpen(path);
+	}
 
 	return 0;
 }

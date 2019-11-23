@@ -133,6 +133,8 @@ IDI_FILE_DLL            ICON                    "res\\file_dll.ico"
 
 IDI_FILE_EXE            ICON                    "res\\file_exe.ico"
 
+IDI_FORWARD             ICON                    "res\\method-friend.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
