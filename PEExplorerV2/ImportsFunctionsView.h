@@ -3,9 +3,9 @@
 #include "GenericListView.h"
 #include "PEParser.h"
 
-class ImportsView : public IGenericListViewCallback {
+class ImportsFunctionsView : public IGenericListViewCallback {
 public:
-	ImportsView(PEParser* parser);
+	void SetSymbols(const std::vector<ImportedSymbol>& symbols);
 	void Init(CListViewCtrl& lv);
 
 	// IGenericListViewCallback
@@ -14,12 +14,10 @@ public:
 	bool Sort(int column, bool ascending) override;
 	int GetIcon(int row) override;
 
-	const ImportedLibrary& GetLibrary(int selected) const;
+private:
+	static bool CompareItems(const ImportedSymbol& s1, const ImportedSymbol& s2, int col, bool asc);
 
 private:
-	static bool CompareItems(ImportedLibrary& lib1, ImportedLibrary& lib2, int col, bool asc);
-
-	PEParser* _parser;
-	std::vector<ImportedLibrary> _libraries;
+	std::vector<ImportedSymbol> _symbols;
 };
 

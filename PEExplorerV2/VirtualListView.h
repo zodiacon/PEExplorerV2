@@ -17,6 +17,21 @@ struct CVirtualListView {
 		bool SortAscending;
 	};
 
+	bool ClearSort(UINT_PTR id) {
+		auto si = FindById(id);
+		if (si == nullptr)
+			return false;
+
+		auto header = CListViewCtrl(si->hWnd).GetHeader();
+		HDITEM h;
+		h.mask = HDI_FORMAT;
+		header.GetItem(si->SortColumn, &h);
+		h.fmt = (h.fmt & HDF_JUSTIFYMASK) | HDF_STRING;
+		header.SetItem(si->SortColumn, &h);
+		si->SortColumn = -1;
+		return true;
+	}
+
 protected:
 	LRESULT OnFindItem(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*/) {
 		auto fi = (NMLVFINDITEM*)hdr;
@@ -86,21 +101,6 @@ protected:
 	}
 
 	bool IsSortable(int) const {
-		return true;
-	}
-
-	bool ClearSort(UINT_PTR id) {
-		auto si = FindById(id);
-		if (si == nullptr)
-			return false;
-
-		auto header = CListViewCtrl(si->hWnd).GetHeader();
-		HDITEM h;
-		h.mask = HDI_FORMAT;
-		header.GetItem(si->SortColumn, &h);
-		h.fmt = (h.fmt & HDF_JUSTIFYMASK) | HDF_STRING;
-		header.SetItem(si->SortColumn, &h);
-		si->SortColumn = -1;
 		return true;
 	}
 

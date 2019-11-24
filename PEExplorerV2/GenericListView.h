@@ -31,6 +31,7 @@ public:
 
 	void DoSort(const SortInfo* si);
 	bool IsSortable(int column) const;
+	void Refresh();
 
 private:
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);

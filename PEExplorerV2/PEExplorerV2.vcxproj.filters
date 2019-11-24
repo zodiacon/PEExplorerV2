@@ -60,6 +60,15 @@
     <ClCompile Include="ImportsView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="ImportsFrameView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="ImportsFunctionsView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="DataDirectoriesView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainFrm.h">
@@ -104,6 +113,15 @@
     <ClInclude Include="ImportsView.h">
       <Filter>Views</Filter>
     </ClInclude>
+    <ClInclude Include="ImportsFrameView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ImportsFunctionsView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="DataDirectoriesView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PEExplorerV2.rc">
@@ -111,9 +129,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\toolbar.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="res\PEExplorerV2.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
@@ -168,8 +183,14 @@
     <Image Include="res\folder_open.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
+    <Image Include="res\library-friend.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\library-import.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
     <Image Include="res\method-friend.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

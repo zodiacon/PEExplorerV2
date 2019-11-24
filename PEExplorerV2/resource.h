@@ -21,8 +21,9 @@
 #define IDI_DIRS                        216
 #define IDI_FILE_DLL                    217
 #define IDI_FILE_EXE                    218
-#define IDI_ICON1                       219
 #define IDI_FORWARD                     219
+#define IDI_LIBRARY_IMPORT              220
+#define IDI_APISET_LIB                  221
 #define ID_VIEW_TREEPANE                32774
 #define ID_OPTIONS_ALWAYSONTOP          32775
 #define ID_FILE_CLOSE32776              32776
@@ -39,7 +40,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        220
+#define _APS_NEXT_RESOURCE_VALUE        222
 #define _APS_NEXT_COMMAND_VALUE         32785
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           101

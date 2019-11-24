@@ -16,12 +16,17 @@ bool CGenericListView::IsSortable(int column) const {
 	return m_Callback->CanSort(column);
 }
 
+void CGenericListView::Refresh() {
+	SetItemCount(m_Callback->GetItemCount());
+}
+
 LRESULT CGenericListView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	DefWindowProc();
 
 	SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT);
 
-	SetItemCount(m_Callback->GetItemCount());
+	Refresh();
+
 	return 0;
 }
 

@@ -11,6 +11,7 @@
 #include "ExportsView.h"
 #include "SectionsView.h"
 #include "ImportsView.h"
+#include "ImportsFrameView.h"
 
 const DWORD ListViewDefaultStyle = WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA | LVS_SHOWSELALWAYS;
 
@@ -81,11 +82,9 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 
 		case TreeNodeType::Imports:
 		{
-			auto view = new ImportsView(m_Parser.get());
-			auto lv = new CGenericListView(view, true);
-			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
-			view->Init(*lv);
-			m_view.AddPage(*lv, L"Imports", 4, (PVOID)type);
+			auto view = new CImportsFrameView(m_Parser.get());
+			view->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE);
+			m_view.AddPage(*view, L"Imports", 4, (PVOID)type);
 			break;
 		}
 
@@ -309,7 +308,10 @@ LRESULT CMainFrame::OnViewTreePane(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 LRESULT CMainFrame::OnFileOpen(WORD, WORD, HWND, BOOL&) {
 	CSimpleFileDialog dlg(TRUE, nullptr, nullptr, OFN_FILEMUSTEXIST | OFN_ENABLESIZING | OFN_EXPLORER,
-		L"PE Files (*.exe, *.dll, *.sys, *.ocx, *.efi)\0*.exe;*.dll;*.sys;*.efi;*.ocx\0All Files\0*.*\0", *this);
+		L"All PE Files\0*.exe;*.dll;*.sys;*.efi;*.ocx;*.lib;*.obj\0"
+		L"Executables (*.exe)\0*.exe\0Dynamic Link Libraries (*.dll)\0*.dll\0"
+		L"Library Files (*.lib, *.obj)\0*.lib;*.obj\0"
+		L"All Files\0*.*\0", *this);
 	if (dlg.DoModal() == IDOK) {
 		DoFileOpen(dlg.m_szFileName);
 	}
@@ -350,6 +352,7 @@ LRESULT CMainFrame::OnDropFiles(UINT, WPARAM wParam, LPARAM, BOOL&) {
 	if (::DragQueryFile(hDrop, 0, path, MAX_PATH)) {
 		DoFileOpen(path);
 	}
+	::DragFinish(hDrop);
 
 	return 0;
 }

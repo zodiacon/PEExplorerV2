@@ -153,8 +153,8 @@ std::vector<ImportedLibrary> PEParser::GetImports() const {
 			if (nameRva == 0)
 				break;
 			auto p = static_cast<PBYTE>(GetAddress(nameRva));
-			auto hint = *(unsigned short*)p;
 			ImportedSymbol symbol;
+			symbol.Hint = *(unsigned short*)p;
 			symbol.Name = (PCSTR)(p + 2);
 			if (::UnDecorateSymbolName(symbol.Name.c_str(), undecorated, sizeof(undecorated), 0))
 				symbol.UndecoratedName = undecorated;
