@@ -15,23 +15,22 @@ void SummaryView::Init(CListViewCtrl& lv) {
 }
 
 int SummaryView::GetItemCount() {
-	_items.reserve(20);
+	_items.reserve(24);
 
 	auto& oh32 = _parser->GetOptionalHeader32();
 	auto& oh64 = _parser->GetOptionalHeader64();
 	auto pe64 = _parser->IsPe64();
 	auto magic = pe64 ? oh64.Magic : oh32.Magic;
-	auto path = _parser->GetFileName();
 	auto& fh = _parser->GetFileHeader();
 	auto dllChar = pe64 ? oh64.DllCharacteristics : oh32.DllCharacteristics;
 
-	_items.push_back(Item(L"File name", PEStrings::GetFileName(path), path));
 	_items.push_back(Item(L"Subsystem", std::to_wstring((short)_parser->GetSubsystemType()).c_str(), PEStrings::SubsystemTypeToString(_parser->GetSubsystemType())));
 	_items.push_back(Item(L"Sections", std::to_wstring(_parser->GetSectionCount()).c_str()));
 	_items.push_back(Item(L"Magic", PEStrings::ToDecAndHex(magic), PEStrings::MagicToString((OptionalHeaderMagic)magic)));
 	_items.push_back(Item(L"Machine", PEStrings::ToDecAndHex(fh.Machine), PEStrings::MachineTypeToString((MachineType)fh.Machine)));
 	_items.push_back(Item(L"Image Characteristics", PEStrings::ToDecAndHex(fh.Characteristics), PEStrings::CharacteristicsToString((ImageCharacteristics)fh.Characteristics)));
 	_items.push_back(Item(L"DLL Characteristics", PEStrings::ToDecAndHex(dllChar), PEStrings::DllCharacteristicsToString((DllCharacteristics)dllChar)));
+	_items.push_back(Item(L"Is managed", _parser->IsManaged() ? L"Yes" : L"No"));
 	_items.push_back(Item(L"Image Base", PEStrings::ToHex(pe64 ? oh64.ImageBase : oh32.ImageBase)));
 	_items.push_back(Item(L"Heap Commit", PEStrings::ToMemorySize(pe64 ? oh64.SizeOfHeapCommit : oh32.SizeOfHeapCommit)));
 	_items.push_back(Item(L"Heap Reserve", PEStrings::ToMemorySize(pe64 ? oh64.SizeOfHeapReserve : oh32.SizeOfHeapReserve)));

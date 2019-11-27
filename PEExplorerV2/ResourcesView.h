@@ -3,27 +3,24 @@
 #include "GenericListView.h"
 #include "PEParser.h"
 
-class DataDirectoriesView : public IGenericListViewCallback {
+class ResourcesView : public IGenericListViewCallback {
 public:
-	DataDirectoriesView(PEParser* parser);
+	ResourcesView(PEParser* parser, CTreeItem resTreeItem);
 	void Init(CListViewCtrl& lv);
 
 	// IGenericListViewCallback
 	int GetItemCount() override;
 	CString GetItemText(int row, int col) override;
 	bool Sort(int column, bool ascending) override;
-	bool CanSort(int col) const override {
-		return false;
-	}
 
 private:
-	struct DataDirectory {
-		CString Name;
-		int Index;
-		DWORD Address;
+	struct ResourceItem {
+		CString Type, Name;
 		DWORD Size;
+		void* Address;
 	};
+
 	PEParser* _parser;
-	DataDirectory _dirs[15];
+	std::vector<ResourceItem> _items;
 };
 

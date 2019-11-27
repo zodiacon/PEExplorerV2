@@ -12,6 +12,7 @@
 #include "SectionsView.h"
 #include "ImportsView.h"
 #include "ImportsFrameView.h"
+#include "DataDirectoriesView.h"
 
 const DWORD ListViewDefaultStyle = WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA | LVS_SHOWSELALWAYS;
 
@@ -95,6 +96,16 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
 			view->Init(*lv);
 			m_view.AddPage(*lv, L"Sections", 1, (PVOID)type);
+			break;
+		}
+
+		case TreeNodeType::Directories:
+		{
+			auto view = new DataDirectoriesView(m_Parser.get());
+			auto lv = new CGenericListView(view, true);
+			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
+			view->Init(*lv);
+			m_view.AddPage(*lv, L"Directories", 2, (PVOID)type);
 			break;
 		}
 

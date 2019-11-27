@@ -1,5 +1,9 @@
 #pragma once
 
+#include <string>
+#include <vector>
+#include <atlstr.h>
+
 struct ExportedSymbol {
 	std::string Name;
 	std::string UndecoratedName;
@@ -133,14 +137,21 @@ enum class MachineType : unsigned short {
 	Arm64 = 43620,
 };
 
+struct ResourceType {
+	CString Name;
+	std::vector<CString> Items;
+};
+
 class PEParser final {
 public:
 	PEParser(const char* path);
+	PEParser(const wchar_t* path);
 	~PEParser();
 
 	bool IsValid() const;
 	bool IsPe64() const;
 	bool IsExecutable() const;
+	bool IsManaged() const;
 
 	int GetSectionCount() const;
 	const IMAGE_SECTION_HEADER* GetSectionHeader(ULONG section) const;
@@ -149,23 +160,35 @@ public:
 	std::vector<ExportedSymbol> GetExports() const;
 	std::vector<ImportedLibrary> GetImports() const;
 	const IMAGE_FILE_HEADER& GetFileHeader() const;
+	std::vector<ResourceType> EnumResources() const;
 
 	void* GetAddress(unsigned rva) const;
 
 	SubsystemType GetSubsystemType() const;
-	CString GetFileName() const;
 
 	IMAGE_OPTIONAL_HEADER32& GetOptionalHeader32() const {
-		return *(IMAGE_OPTIONAL_HEADER32*)&_image->FileHeader->OptionalHeader;
+		return *_opt32;
 	}
 	IMAGE_OPTIONAL_HEADER64& GetOptionalHeader64() const {
-		return _image->FileHeader->OptionalHeader;
+		return *_opt64;
 	}
 
+	bool GetResourceInfo(PCWSTR type, PCWSTR name, void*& address, DWORD& size) const;
+
 private:
+	void CheckValidity();
 	unsigned RvaToFileOffset(unsigned rva) const;
+	//void ParseResourceDirectoryEntry(IMAGE_RESOURCE_DIRECTORY_ENTRY* entry, void* root, const CString& parent, IResourceCallback*) const;
+	//void ParseResourceDirectory(IMAGE_RESOURCE_DIRECTORY* dir, void* root, const CString& parent, IResourceCallback*) const;
 
-	PLOADED_IMAGE _image;
+	CString GetResourceName(void* data) const;
+
+	HANDLE _hMemFile{ nullptr };
+	PBYTE _address{ nullptr };
+	IMAGE_DOS_HEADER* _dosHeader;
+	IMAGE_FILE_HEADER* _fileHeader;
+	IMAGE_SECTION_HEADER* _sections;
+	IMAGE_OPTIONAL_HEADER32* _opt32{ nullptr };
+	IMAGE_OPTIONAL_HEADER64* _opt64{ nullptr };
+	bool _valid = false;
 };
-
-

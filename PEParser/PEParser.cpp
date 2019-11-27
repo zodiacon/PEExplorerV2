@@ -1,44 +1,64 @@
+// PEParser.cpp : Defines the functions for the static library.
+//
+
 #include "pch.h"
+#include "framework.h"
 #include "PEParser.h"
+#include <ImageHlp.h>
 
 #pragma comment(lib, "imagehlp")
 
-PEParser::PEParser(const char* path) {
-	_image = ::ImageLoad(path, nullptr);
+PEParser::PEParser(const char* path) : PEParser(CString(path)) {
+}
+
+PEParser::PEParser(const wchar_t* path) {
+	_address = (PBYTE)::LoadLibraryEx(path, nullptr, LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE);
+	if (_address == nullptr)
+		return;
+
+	_address = (PBYTE)(((ULONG_PTR)_address) & ~0xf);
+
+	CheckValidity();
 }
 
 PEParser::~PEParser() {
-	if (_image)
-		::ImageUnload(_image);
+	if (_address)
+		::FreeLibrary((HMODULE)_address);
+	if (_hMemFile)
+		::CloseHandle(_hMemFile);
 }
 
 bool PEParser::IsValid() const {
-	return _image != nullptr;
+	return _valid;
 }
 
 bool PEParser::IsPe64() const {
-	return _image->FileHeader->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC;
+	return _opt32->Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC;
 }
 
 bool PEParser::IsExecutable() const {
 	if (!IsValid())
 		return false;
 
-	return (_image->FileHeader->FileHeader.Characteristics & IMAGE_FILE_DLL) == 0;
+	return (_fileHeader->Characteristics & IMAGE_FILE_DLL) == 0;
+}
+
+bool PEParser::IsManaged() const {
+	return GetDataDirectory(IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR)->Size != 0;
 }
 
 int PEParser::GetSectionCount() const {
 	if (!IsValid())
 		return -1;
 
-	return _image->NumberOfSections;
+	return _fileHeader->NumberOfSections;
 }
 
 const IMAGE_SECTION_HEADER* PEParser::GetSectionHeader(ULONG section) const {
-	if (!IsValid() || section >= _image->NumberOfSections)
+	if (!IsValid() || section >= _fileHeader->NumberOfSections)
 		return nullptr;
 
-	return &_image->Sections[section];
+	return _sections + section;
 }
 
 
@@ -170,21 +190,21 @@ std::vector<ImportedLibrary> PEParser::GetImports() const {
 }
 
 const IMAGE_FILE_HEADER& PEParser::GetFileHeader() const {
-	return _image->FileHeader->FileHeader;
+	return *_fileHeader;
 }
 
 void* PEParser::GetAddress(unsigned rva) const {
 	if (!IsValid())
 		return nullptr;
 
-	auto sections = _image->Sections;
-	int count = _image->NumberOfSections;
-	for (int i = 0; i < count; ++i) {
-		if (rva >= sections[i].VirtualAddress && rva < sections[i].VirtualAddress + sections[i].SizeOfRawData)
-			return _image->MappedAddress + sections[i].PointerToRawData + rva - sections[i].VirtualAddress;
-	}
+	//auto sections = _sections;
+	//int count = GetSectionCount();
+	//for (int i = 0; i < count; ++i) {
+	//	if (rva >= sections[i].VirtualAddress && rva < sections[i].VirtualAddress + sections[i].SizeOfRawData)
+	//		return _address + sections[i].PointerToRawData + rva - sections[i].VirtualAddress;
+	//}
 
-	return _image->MappedAddress + rva;
+	return _address + rva;
 
 }
 
@@ -192,16 +212,106 @@ SubsystemType PEParser::GetSubsystemType() const {
 	return static_cast<SubsystemType>(IsPe64() ? GetOptionalHeader64().Subsystem : GetOptionalHeader32().Subsystem);
 }
 
-CString PEParser::GetFileName() const {
-	return _image ? CString(_image->ModuleName) : L"";
+void PEParser::CheckValidity() {
+	_dosHeader = reinterpret_cast<IMAGE_DOS_HEADER*>(_address);
+	if (_dosHeader->e_magic != IMAGE_DOS_SIGNATURE)
+		return;
+
+	auto ntHeader = (IMAGE_NT_HEADERS*)((PBYTE)_dosHeader + _dosHeader->e_lfanew);
+	_fileHeader = &ntHeader->FileHeader;
+	_opt32 = (IMAGE_OPTIONAL_HEADER32*)&ntHeader->OptionalHeader;
+	_opt64 = (IMAGE_OPTIONAL_HEADER64*)&ntHeader->OptionalHeader;
+	_sections = IsPe64() ? (PIMAGE_SECTION_HEADER)(_opt64 + 1) : (PIMAGE_SECTION_HEADER)(_opt32 + 1);
+	_valid = true;
 }
 
 unsigned PEParser::RvaToFileOffset(unsigned rva) const {
-	auto sections = _image->Sections;
+	auto sections = _sections;
 	for (int i = 0; i < GetSectionCount(); ++i) {
-		if (rva >= sections[i].VirtualAddress && rva < sections[i].VirtualAddress + _image->Sections[i].Misc.VirtualSize)
+		if (rva >= sections[i].VirtualAddress && rva < sections[i].VirtualAddress + _sections[i].Misc.VirtualSize)
 			return sections[i].PointerToRawData + rva - sections[i].VirtualAddress;
 	}
 
 	return rva;
+}
+
+//void PEParser::ParseResourceDirectoryEntry(IMAGE_RESOURCE_DIRECTORY_ENTRY* entry, void* root, const CString& parent, IResourceCallback* cb) const {
+//	CString name;
+//	if (entry->NameIsString) {
+//		name = GetResourceName((PBYTE)root + entry->NameOffset);
+//	}
+//	else {
+//		name = (L"#" + std::to_wstring(entry->Id)).c_str();
+//	}
+//	if (entry->DataIsDirectory) {
+//		cb->OnResourceDirectory(name, parent);
+//		ParseResourceDirectory((IMAGE_RESOURCE_DIRECTORY*)((PBYTE)root + entry->OffsetToDirectory), root, parent + L"/" + name, cb);
+//	}
+//	else {
+//		auto data = reinterpret_cast<IMAGE_RESOURCE_DATA_ENTRY*>((PBYTE)root + entry->OffsetToData);
+//		cb->OnResource(name, (PBYTE)entry + data->OffsetToData, data->Size);
+//	}
+//}
+//
+//void PEParser::ParseResourceDirectory(IMAGE_RESOURCE_DIRECTORY* dir, void* root, const CString& parent, IResourceCallback* cb) const {
+//	auto namedCount = dir->NumberOfNamedEntries;
+//	auto idCount = dir->NumberOfIdEntries;
+//
+//	auto entry = reinterpret_cast<IMAGE_RESOURCE_DIRECTORY_ENTRY*>(dir + 1);
+//	for (int i = 0; i < namedCount + idCount; i++) {
+//		ParseResourceDirectoryEntry(entry, root, parent, cb);
+//		entry++;
+//	}
+//}
+
+CString PEParser::GetResourceName(void* data) const {
+	auto sdata = (IMAGE_RESOURCE_DIR_STRING_U*)data;
+	return CString(sdata->NameString, sdata->Length);
+}
+
+std::vector<ResourceType> PEParser::EnumResources() const {
+	using Types = std::vector<ResourceType>;
+	Types types;
+	if (!IsValid())
+		return types;
+
+	auto dir = GetDataDirectory(IMAGE_DIRECTORY_ENTRY_RESOURCE);
+	if (dir->Size == 0)
+		return types;
+
+	types.reserve(8);
+	struct Context {
+		Types* Types;
+		HMODULE Module;
+	} context;
+
+	context.Module = (HMODULE)(_address + 2);
+	context.Types = &types;
+
+	::EnumResourceTypes((HMODULE)(_address + 2), [](auto h, auto type, auto p) {
+		auto context = reinterpret_cast<Context*>(p);
+		ResourceType rt;
+		if ((ULONG_PTR)type < 0x10000)
+			rt.Name = (L"#" + std::to_wstring((WORD)reinterpret_cast<ULONG_PTR>(type))).c_str();
+		else
+			rt.Name = type;
+
+		::EnumResourceNames(context->Module, type, [](auto, auto type, auto name, auto p) {
+			auto rt = reinterpret_cast<ResourceType*>(p);
+
+			CString resName;
+			if((ULONG_PTR)name < 0x10000)
+				resName = (L"#" + std::to_wstring((WORD)reinterpret_cast<ULONG_PTR>(name))).c_str();
+			else
+				resName = name;
+			rt->Items.push_back(std::move(resName));
+			return TRUE;
+			}, reinterpret_cast<LONG_PTR>(&rt));
+
+		context->Types->push_back(rt);
+
+		return TRUE;
+		}, reinterpret_cast<LONG_PTR>(&context));
+
+	return types;
 }

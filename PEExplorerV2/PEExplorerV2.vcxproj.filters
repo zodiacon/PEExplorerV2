@@ -36,9 +36,6 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PEParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GenericListView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -66,8 +63,11 @@
     <ClCompile Include="ImportsFunctionsView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="ResourcesView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
     <ClCompile Include="DataDirectoriesView.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Views</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -84,9 +84,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PEParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GenericListView.h">
@@ -119,8 +116,11 @@
     <ClInclude Include="ImportsFunctionsView.h">
       <Filter>Views</Filter>
     </ClInclude>
+    <ClInclude Include="ResourcesView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
     <ClInclude Include="DataDirectoriesView.h">
-      <Filter>Header Files</Filter>
+      <Filter>Views</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
