@@ -135,7 +135,7 @@ void CMainFrame::SwitchToTab(TreeNodeType type) {
 }
 
 void CMainFrame::DoFileOpen(PCWSTR path) {
-	auto file = std::make_unique<PEParser>(CStringA(path));
+	auto file = std::make_unique<PEParser>(path);
 	if (!file->IsValid()) {
 		MessageBox(L"Error opening file.", L"PE Explorer", MB_ICONERROR);
 		return;
@@ -143,6 +143,8 @@ void CMainFrame::DoFileOpen(PCWSTR path) {
 
 	m_Parser = std::move(file);
 	m_FilePath = path;
+	AddToRecentFiles(path);
+
 	m_FileName = m_FilePath.Mid(m_FilePath.ReverseFind(L'\\') + 1);
 	CString title;
 	title.LoadString(IDR_MAINFRAME);
@@ -150,6 +152,75 @@ void CMainFrame::DoFileOpen(PCWSTR path) {
 	m_view.RemoveAllPages();
 
 	InitTree();
+}
+
+void CMainFrame::AddRecentFiles(bool first) {
+	if (m_RecentFiles.empty())
+		return;
+
+	CMenuHandle menu(m_CmdBar.GetMenu());
+	CMenu popup;
+	popup.CreatePopupMenu();
+	int i = 0;
+	for (auto& file : m_RecentFiles) {
+		popup.AppendMenuW(MF_BYCOMMAND, ID_FILE_RECENTFILES + i++, file);
+	}
+	menu.GetSubMenu(0).InsertMenu(3, MF_BYPOSITION, popup.Detach(), L"Recent Files");
+	if(m_RecentFiles.size() == 1 || first)
+		menu.GetSubMenu(0).InsertMenu(4, MF_BYPOSITION | MF_SEPARATOR, 0);
+}
+
+void CMainFrame::AddToRecentFiles(PCWSTR file) {
+	auto empty = m_RecentFiles.empty();
+	auto it = std::find(m_RecentFiles.begin(), m_RecentFiles.end(), file);
+	if (it != m_RecentFiles.end()) {
+		// file exists, move to top of list
+		m_RecentFiles.erase(it);
+		m_RecentFiles.insert(m_RecentFiles.begin(), file);
+	}
+	else {
+		m_RecentFiles.insert(m_RecentFiles.begin(), file);
+		if (m_RecentFiles.size() > 10)
+			m_RecentFiles.pop_back();
+	}
+
+	if (!empty) {
+		CMenuHandle menu(m_CmdBar.GetMenu());
+		menu = menu.GetSubMenu(0);
+		menu.DeleteMenu(3, MF_BYPOSITION);
+	}
+	AddRecentFiles();
+}
+
+bool CMainFrame::SaveSettings() {
+	WCHAR path[MAX_PATH];
+	if (!::SHGetSpecialFolderPath(nullptr, path, CSIDL_LOCAL_APPDATA, TRUE))
+		return false;
+
+	::wcscat_s(path, L"\\PEExplorerV2.ini");
+	int i = 0;
+	for (auto& file : m_RecentFiles) {
+		::WritePrivateProfileString(L"RecentFiles", (L"File" + std::to_wstring(i++)).c_str(), file, path);
+	}
+	return true;
+}
+
+bool CMainFrame::LoadSettings() {
+	WCHAR path[MAX_PATH];
+	if (!::SHGetSpecialFolderPath(nullptr, path, CSIDL_LOCAL_APPDATA, FALSE))
+		return false;
+
+	::wcscat_s(path, L"\\PEExplorerV2.ini");
+	WCHAR file[MAX_PATH];
+	for(int i = 0; i < 10; i++) {
+		if (!::GetPrivateProfileString(L"RecentFiles", (L"File" + std::to_wstring(i)).c_str(), L"", file, MAX_PATH, path))
+			break;
+		if (*file == L'\0')
+			break;
+		m_RecentFiles.push_back(file);
+	}
+
+	return true;
 }
 
 LRESULT CMainFrame::OnWindowClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -170,6 +241,7 @@ LRESULT CMainFrame::OnWindowCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	DragAcceptFiles();
+	LoadSettings();
 
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
@@ -269,6 +341,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	UISetCheck(ID_VIEW_TOOLBAR, 1);
 	UISetCheck(ID_VIEW_STATUS_BAR, 1);
 
+	AddRecentFiles(true);
+
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != nullptr);
@@ -281,6 +355,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 }
 
 LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	SaveSettings();
+
 	// unregister message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != nullptr);
@@ -376,6 +452,22 @@ LRESULT CMainFrame::OnDropFiles(UINT, WPARAM wParam, LPARAM, BOOL&) {
 	}
 	::DragFinish(hDrop);
 
+	return 0;
+}
+
+LRESULT CMainFrame::OnWindowActivate(WORD, WORD id, HWND, BOOL&) {
+	int nPage = id - ID_WINDOW_TABFIRST;
+	m_view.SetActivePage(nPage);
+	return 0;
+}
+
+LRESULT CMainFrame::OnRecentFile(WORD, WORD id, HWND, BOOL&) {
+	int index = id - ID_FILE_RECENTFILES;
+	auto path = m_RecentFiles[index];
+	if (path == m_FilePath)
+		return 0;
+	
+	DoFileOpen(path);
 	return 0;
 }
 

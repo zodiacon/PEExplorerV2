@@ -35,13 +35,14 @@
 #define ID_VIEW_RESOURCES               32782
 #define ID_WINDOW_CLOSE                 32783
 #define ID_WINDOW_CLOSEALL              32784
+#define ID_FILE_RECENTFILES             32785
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        222
-#define _APS_NEXT_COMMAND_VALUE         32785
+#define _APS_NEXT_COMMAND_VALUE         32796
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

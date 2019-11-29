@@ -42,6 +42,8 @@ public:
 		COMMAND_ID_HANDLER(ID_WINDOW_CLOSEALL, OnWindowCloseAll)
 		COMMAND_ID_HANDLER(ID_WINDOW_CLOSE, OnWindowClose)
 		COMMAND_RANGE_HANDLER(ID_VIEW_SUMMARY, ID_VIEW_RESOURCES, OnViewDataItem)
+		COMMAND_RANGE_HANDLER(ID_WINDOW_TABFIRST, ID_WINDOW_TABLAST, OnWindowActivate)
+		COMMAND_RANGE_HANDLER(ID_FILE_RECENTFILES, ID_FILE_RECENTFILES + 9, OnRecentFile)
 		MESSAGE_HANDLER(WM_DROPFILES, OnDropFiles)
 		NOTIFY_CODE_HANDLER(NM_DBLCLK, OnTreeItemDoubleClick)
 		CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
@@ -70,6 +72,10 @@ private:
 	void CreateNewTab(TreeNodeType type);
 	void SwitchToTab(TreeNodeType type);
 	void DoFileOpen(PCWSTR path);
+	void AddRecentFiles(bool first = false);
+	void AddToRecentFiles(PCWSTR file);
+	bool SaveSettings();
+	bool LoadSettings();
 
 	template<typename T>
 	CTreeItem InsertTreeItem(PCWSTR text, int image, int selectedImage, T data = 0, HTREEITEM hParent = TVI_ROOT, HTREEITEM hAfter = TVI_LAST);
@@ -88,8 +94,11 @@ private:
 	LRESULT OnTreeItemDoubleClick(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnViewDataItem(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnDropFiles(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnWindowActivate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnRecentFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
+	std::vector<CString> m_RecentFiles;
 	CSplitterWindow m_splitter;
 	CTreeViewCtrlEx m_tree;
 	CTabView m_view;

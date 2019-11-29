@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "ResourcesView.h"
 #include "PEStrings.h"
+#include <algorithm>
+#include "SortHelper.h"
 
 ResourcesView::ResourcesView(PEParser* parser, CTreeItem resTreeItem) : _parser(parser) {
 }
@@ -44,5 +46,29 @@ CString ResourcesView::GetItemText(int row, int col) {
 }
 
 bool ResourcesView::Sort(int column, bool ascending) {
+	std::sort(_items.begin(), _items.end(), [column, ascending](const auto& res1, const auto& res2) {
+		return CompareItems(res1, res2, column, ascending);
+		});
+
+	return true;
+}
+
+bool ResourcesView::CompareItems(const ResourceItem& res1, const ResourceItem& res2, int col, bool asc) {
+	switch (col) {
+		case 0:
+			return SortHelper::SortStrings(res1.Type, res2.Type, asc);
+
+		case 1:
+			if (res1.Resource.IsId != res2.Resource.IsId)
+				return SortHelper::SortBoolean(res1.Resource.IsId, res2.Resource.IsId, asc);
+			if (res1.Resource.IsId)
+				return SortHelper::SortNumbers(res1.Resource.Id, res2.Resource.Id, asc);
+			return SortHelper::SortStrings(res1.Resource.Name, res2.Resource.Name, asc);
+
+		case 2: return SortHelper::SortNumbers(res1.Resource.Rva, res2.Resource.Rva, asc);
+		case 3:	return SortHelper::SortNumbers(res1.Resource.Size, res2.Resource.Size, asc);
+	}
+
+	ATLASSERT(false);
 	return false;
 }

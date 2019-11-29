@@ -18,6 +18,7 @@ private:
 		CString Type;
 		ResourceInfo Resource;
 	};
+	static bool CompareItems(const ResourceItem& res1, const ResourceItem& res2, int col, bool asc);
 
 	PEParser* _parser;
 	std::vector<ResourceItem> _items;
