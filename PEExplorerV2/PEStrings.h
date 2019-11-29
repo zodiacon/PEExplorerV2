@@ -15,5 +15,6 @@ struct PEStrings abstract final {
 	static CString ToHex(DWORD value, bool leadingZero = false);
 	static CString ToHex(ULONGLONG value);
 	static CString ToMemorySize(ULONGLONG size);
+	static PCWSTR ResourceTypeToString(WORD id);
 };
 

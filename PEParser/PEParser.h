@@ -137,9 +137,20 @@ enum class MachineType : unsigned short {
 	Arm64 = 43620,
 };
 
+struct ResourceInfo {
+	CString Name;
+	DWORD Rva;
+	DWORD Size;
+	void* Address;
+	WORD Id;
+	bool IsId{ false };
+};
+
 struct ResourceType {
 	CString Name;
-	std::vector<CString> Items;
+	std::vector<ResourceInfo> Items;
+	WORD Id;
+	bool IsId{ false };
 };
 
 class PEParser final {
@@ -172,8 +183,6 @@ public:
 	IMAGE_OPTIONAL_HEADER64& GetOptionalHeader64() const {
 		return *_opt64;
 	}
-
-	bool GetResourceInfo(PCWSTR type, PCWSTR name, void*& address, DWORD& size) const;
 
 private:
 	void CheckValidity();

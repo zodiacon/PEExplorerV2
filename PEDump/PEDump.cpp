@@ -23,6 +23,6 @@ int main(int argc, const char* argv[]) {
 	for (auto& type : resources) {
 		printf("%ws\n", (PCWSTR)type.Name);
 		for (auto& item : type.Items)
-			printf("\t%ws\n", (PCWSTR)item);
+			printf("\t%ws\n", (PCWSTR)item.Name);
 	}
 }

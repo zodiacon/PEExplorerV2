@@ -15,9 +15,8 @@ public:
 
 private:
 	struct ResourceItem {
-		CString Type, Name;
-		DWORD Size;
-		void* Address;
+		CString Type;
+		ResourceInfo Resource;
 	};
 
 	PEParser* _parser;

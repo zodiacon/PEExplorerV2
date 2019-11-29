@@ -283,33 +283,48 @@ std::vector<ResourceType> PEParser::EnumResources() const {
 	struct Context {
 		Types* Types;
 		HMODULE Module;
+		ResourceType* Current;
 	} context;
 
 	context.Module = (HMODULE)(_address + 2);
 	context.Types = &types;
+	context.Current = nullptr;
 
-	::EnumResourceTypes((HMODULE)(_address + 2), [](auto h, auto type, auto p) {
+	::EnumResourceTypes(context.Module, [](auto h, auto type, auto p) {
 		auto context = reinterpret_cast<Context*>(p);
 		ResourceType rt;
-		if ((ULONG_PTR)type < 0x10000)
-			rt.Name = (L"#" + std::to_wstring((WORD)reinterpret_cast<ULONG_PTR>(type))).c_str();
+		if ((ULONG_PTR)type < 0x10000) {
+			rt.Id = (WORD)reinterpret_cast<ULONG_PTR>(type);
+			rt.IsId = true;
+			rt.Name = (L"#" + std::to_wstring(rt.Id)).c_str();
+		}
 		else
 			rt.Name = type;
 
+		context->Current = &rt;
 		::EnumResourceNames(context->Module, type, [](auto, auto type, auto name, auto p) {
-			auto rt = reinterpret_cast<ResourceType*>(p);
-
-			CString resName;
-			if((ULONG_PTR)name < 0x10000)
-				resName = (L"#" + std::to_wstring((WORD)reinterpret_cast<ULONG_PTR>(name))).c_str();
+			auto context = reinterpret_cast<Context*>(p);
+			auto rt = context->Current;
+			ResourceInfo resource;
+			if ((ULONG_PTR)name < 0x10000) {
+				resource.IsId = true;
+				resource.Id = (WORD)reinterpret_cast<ULONG_PTR>(name);
+				resource.Name = (L"#" + std::to_wstring(resource.Id)).c_str();
+			}
 			else
-				resName = name;
-			rt->Items.push_back(std::move(resName));
+				resource.Name = name;
+			auto hResource = ::FindResource(context->Module, name, context->Current->Name);
+			if (hResource) {
+				resource.Size = ::SizeofResource(context->Module, hResource);
+				resource.Address = ::LockResource(::LoadResource(context->Module, hResource));
+				resource.Rva = ((DWORD_PTR)resource.Address) - (((DWORD_PTR)context->Module) & ~0xf);
+			}
+
+			rt->Items.push_back(std::move(resource));
 			return TRUE;
-			}, reinterpret_cast<LONG_PTR>(&rt));
+			}, reinterpret_cast<LONG_PTR>(context));
 
 		context->Types->push_back(rt);
-
 		return TRUE;
 		}, reinterpret_cast<LONG_PTR>(&context));
 

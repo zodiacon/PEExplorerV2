@@ -13,6 +13,7 @@
 #include "ImportsView.h"
 #include "ImportsFrameView.h"
 #include "DataDirectoriesView.h"
+#include "ResourcesView.h"
 
 const DWORD ListViewDefaultStyle = WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA | LVS_SHOWSELALWAYS;
 
@@ -106,6 +107,16 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
 			view->Init(*lv);
 			m_view.AddPage(*lv, L"Directories", 2, (PVOID)type);
+			break;
+		}
+
+		case TreeNodeType::Resources:
+		{
+			auto view = new ResourcesView(m_Parser.get(), m_tree.GetRootItem());
+			auto lv = new CGenericListView(view, true);
+			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
+			view->Init(*lv);
+			m_view.AddPage(*lv, L"Resources", 4, (PVOID)type);
 			break;
 		}
 

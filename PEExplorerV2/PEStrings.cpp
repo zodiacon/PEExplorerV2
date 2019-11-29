@@ -153,4 +153,16 @@ CString PEStrings::ToMemorySize(ULONGLONG size) {
 	return result;
 }
 
+PCWSTR PEStrings::ResourceTypeToString(WORD id) {
+	static PCWSTR types[] = {
+		nullptr, L"Cursor", L"Bitmap", L"Icon",	L"Menu", L"Dialog",
+		L"String Table", L"Font Directory", L"Font",
+		L"Accelerators", L"RC Data", L"Message Table", L"Group Cursor", nullptr,
+		L"Group Icon", nullptr, L"Version", L"Dialog Include",
+		nullptr, L"Plug & Play", L"VxD", L"Animated Cursor", L"Animated Icon",
+		L"HTML", L"Manifest"
+	};
+	return id >= _countof(types) ? nullptr : types[id];
+}
+
 
