@@ -63,33 +63,33 @@ CString PEStrings::CharacteristicsToString(ImageCharacteristics ch) {
 	CString result;
 
 	if ((ch & ImageCharacteristics::RelocsStripped) != ImageCharacteristics::None)
-		result += L"Relocations Stripped (1), ";
+		result += L"Relocations Stripped, ";
 	if ((ch & ImageCharacteristics::ExecutableImage) != ImageCharacteristics::None)
-		result += L"Executable Image (2), ";
+		result += L"Executable Image, ";
 	if ((ch & ImageCharacteristics::LineNumsStripped) != ImageCharacteristics::None)
-		result += L"Line Numbers Stripped (4), ";
+		result += L"Line Numbers Stripped, ";
 	if ((ch & ImageCharacteristics::LocalSymbolsStripped) != ImageCharacteristics::None)
-		result += L"Local Symbols Stripped (8), ";
+		result += L"Local Symbols Stripped, ";
 	if ((ch & ImageCharacteristics::DllFile) != ImageCharacteristics::None)
-		result += L"Dll File (0x2000), ";
+		result += L"Dll File, ";
 	if ((ch & ImageCharacteristics::AggressiveTrimWorkingSet) != ImageCharacteristics::None)
-		result += L"Aggressive Trim Working Set (0x10), ";
+		result += L"Aggressive Trim Working Set, ";
 	if ((ch & ImageCharacteristics::LargeAddressAware) != ImageCharacteristics::None)
-		result += L"Large Address Aware (0x20), ";
+		result += L"Large Address Aware, ";
 	if ((ch & ImageCharacteristics::LittleEndian) != ImageCharacteristics::None)
-		result += L"Little Endian (0x80), ";
+		result += L"Little Endian, ";
 	if ((ch & ImageCharacteristics::Machine32Bit) != ImageCharacteristics::None)
-		result += L"32 bit Machine (0x100), ";
+		result += L"32 bit Machine, ";
 	if ((ch & ImageCharacteristics::DebugInfoStripped) != ImageCharacteristics::None)
-		result += L"Debug Info Stripped (0x200), ";
+		result += L"Debug Info Stripped, ";
 	if ((ch & ImageCharacteristics::RemovableRunFromSwap) != ImageCharacteristics::None)
-		result += L"Removable Run from Swap (0x400), ";
+		result += L"Removable Run from Swap, ";
 	if ((ch & ImageCharacteristics::NetRunFromSwap) != ImageCharacteristics::None)
-		result += L"Net Run from Swap (0x800), ";
+		result += L"Net Run from Swap, ";
 	if ((ch & ImageCharacteristics::SingleCpuOnly) != ImageCharacteristics::None)
-		result += L"Single CPU Only (0x4000), ";
+		result += L"Single CPU Only, ";
 	if ((ch & ImageCharacteristics::BigEndian) != ImageCharacteristics::None)
-		result += L"Big Endian (0x8000), ";
+		result += L"Big Endian, ";
 
 	if (!result.IsEmpty())
 		result = result.Left(result.GetLength() - 2);
@@ -99,27 +99,27 @@ CString PEStrings::CharacteristicsToString(ImageCharacteristics ch) {
 CString PEStrings::DllCharacteristicsToString(DllCharacteristics ch) {
 	CString result;
 	if ((ch & DllCharacteristics::HighEntropyVA) != DllCharacteristics::None)
-		result += L"High Entropy VA (0x20), ";
+		result += L"High Entropy VA, ";
 	if ((ch & DllCharacteristics::DynamicBase) != DllCharacteristics::None)
-		result += L"Dynamic Base (0x40), ";
+		result += L"Dynamic Base, ";
 	if ((ch & DllCharacteristics::ForceIntegrity) != DllCharacteristics::None)
-		result += L"Force Integrity (0x80), ";
+		result += L"Force Integrity, ";
 	if ((ch & DllCharacteristics::NxCompat) != DllCharacteristics::None)
-		result += L"NX Compat (0x100), ";
+		result += L"NX Compat, ";
 	if ((ch & DllCharacteristics::NoIsolation) != DllCharacteristics::None)
-		result += L"No Isolation (0x200), ";
+		result += L"No Isolation, ";
 	if ((ch & DllCharacteristics::NoSEH) != DllCharacteristics::None)
-		result += L"No SEH (0x400), ";
+		result += L"No SEH, ";
 	if ((ch & DllCharacteristics::NoBind) != DllCharacteristics::None)
-		result += L"No Bind (0x800), ";
+		result += L"No Bind, ";
 	if ((ch & DllCharacteristics::AppContainer) != DllCharacteristics::None)
-		result += L"App Container (0x1000), ";
+		result += L"App Container, ";
 	if ((ch & DllCharacteristics::WDMDriver) != DllCharacteristics::None)
-		result += L"WDM Driver (0x2000), ";
+		result += L"WDM Driver, ";
 	if ((ch & DllCharacteristics::ControlFlowGuard) != DllCharacteristics::None)
-		result += L"Control Flow Guard (0x4000), ";
+		result += L"Control Flow Guard, ";
 	if ((ch & DllCharacteristics::TerminalServerAware) != DllCharacteristics::None)
-		result += L"Terminal Server Aware (0x8000), ";
+		result += L"Terminal Server Aware, ";
 
 	if (!result.IsEmpty())
 		result = result.Left(result.GetLength() - 2);

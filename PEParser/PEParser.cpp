@@ -8,9 +8,6 @@
 
 #pragma comment(lib, "imagehlp")
 
-PEParser::PEParser(const char* path) : PEParser(CString(path)) {
-}
-
 PEParser::PEParser(const wchar_t* path) {
 	_address = (PBYTE)::LoadLibraryEx(path, nullptr, LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE);
 	if (_address == nullptr)
@@ -317,7 +314,7 @@ std::vector<ResourceType> PEParser::EnumResources() const {
 			if (hResource) {
 				resource.Size = ::SizeofResource(context->Module, hResource);
 				resource.Address = ::LockResource(::LoadResource(context->Module, hResource));
-				resource.Rva = ((DWORD_PTR)resource.Address) - (((DWORD_PTR)context->Module) & ~0xf);
+				resource.Rva = static_cast<DWORD>(DWORD_PTR(resource.Address) - (DWORD_PTR(context->Module) & ~0xf));
 			}
 
 			rt->Items.push_back(std::move(resource));

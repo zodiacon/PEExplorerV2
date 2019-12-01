@@ -4,7 +4,6 @@
 
 #include "pch.h"
 #include "aboutdlg.h"
-#include "View.h"
 #include "MainFrm.h"
 #include "GenericListView.h"
 #include "SummaryView.h"
@@ -112,11 +111,11 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 
 		case TreeNodeType::Resources:
 		{
-			auto view = new ResourcesView(m_Parser.get(), m_tree.GetRootItem());
+			auto view = new ResourcesView(m_Parser.get());
 			auto lv = new CGenericListView(view, true);
 			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
 			view->Init(*lv);
-			m_view.AddPage(*lv, L"Resources", 4, (PVOID)type);
+			m_view.AddPage(*lv, L"Resources", 5, (PVOID)type);
 			break;
 		}
 

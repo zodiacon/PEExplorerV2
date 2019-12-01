@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "View.h"
 #include "PEParser.h"
 #include "resource.h"
 

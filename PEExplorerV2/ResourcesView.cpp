@@ -4,7 +4,7 @@
 #include <algorithm>
 #include "SortHelper.h"
 
-ResourcesView::ResourcesView(PEParser* parser, CTreeItem resTreeItem) : _parser(parser) {
+ResourcesView::ResourcesView(PEParser* parser) : _parser(parser) {
 }
 
 void ResourcesView::Init(CListViewCtrl& lv) {

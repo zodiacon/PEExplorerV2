@@ -155,8 +155,7 @@ struct ResourceType {
 
 class PEParser final {
 public:
-	PEParser(const char* path);
-	PEParser(const wchar_t* path);
+	explicit PEParser(const wchar_t* path);
 	~PEParser();
 
 	bool IsValid() const;

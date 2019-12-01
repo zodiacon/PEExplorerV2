@@ -5,7 +5,7 @@
 #include <windows.h>
 #include "..\PEParser\PEParser.h"
 
-int main(int argc, const char* argv[]) {
+int wmain(int argc, const wchar_t* argv[]) {
 	if (argc < 2) {
 		printf("Usage: PEDump [options] <filename>\n");
 		return 0;
@@ -17,7 +17,7 @@ int main(int argc, const char* argv[]) {
 		return 1;
 	}
 
-	printf("PE file: %s\n", argv[1]);
+	printf("PE file: %ws\n", argv[1]);
 
 	auto resources = parser.EnumResources();
 	for (auto& type : resources) {

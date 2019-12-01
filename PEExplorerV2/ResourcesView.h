@@ -5,7 +5,7 @@
 
 class ResourcesView : public IGenericListViewCallback {
 public:
-	ResourcesView(PEParser* parser, CTreeItem resTreeItem);
+	ResourcesView(PEParser* parser);
 	void Init(CListViewCtrl& lv);
 
 	// IGenericListViewCallback

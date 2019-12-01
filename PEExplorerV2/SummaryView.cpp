@@ -24,6 +24,7 @@ int SummaryView::GetItemCount() {
 	auto& fh = _parser->GetFileHeader();
 	auto dllChar = pe64 ? oh64.DllCharacteristics : oh32.DllCharacteristics;
 
+	_items.push_back(Item(L"Time/Date Stamp", PEStrings::ToHex(fh.TimeDateStamp)));	// , CTime(fh.TimeDateStamp).Format(L"%c")));
 	_items.push_back(Item(L"Subsystem", std::to_wstring((short)_parser->GetSubsystemType()).c_str(), PEStrings::SubsystemTypeToString(_parser->GetSubsystemType())));
 	_items.push_back(Item(L"Sections", std::to_wstring(_parser->GetSectionCount()).c_str()));
 	_items.push_back(Item(L"Magic", PEStrings::ToDecAndHex(magic), PEStrings::MagicToString((OptionalHeaderMagic)magic)));

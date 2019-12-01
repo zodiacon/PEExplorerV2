@@ -224,7 +224,6 @@
     <ClCompile Include="SectionsView.cpp" />
     <ClCompile Include="SortHelper.cpp" />
     <ClCompile Include="SummaryView.cpp" />
-    <ClCompile Include="View.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />
@@ -242,7 +241,6 @@
     <ClInclude Include="SectionsView.h" />
     <ClInclude Include="SortHelper.h" />
     <ClInclude Include="SummaryView.h" />
-    <ClInclude Include="View.h" />
     <ClInclude Include="VirtualListView.h" />
   </ItemGroup>
   <ItemGroup>
