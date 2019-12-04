@@ -114,7 +114,7 @@
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <Optimization>Disabled</Optimization>
@@ -205,9 +205,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
+    <ClCompile Include="CHexView.cpp" />
     <ClCompile Include="DataDirectoriesView.cpp" />
     <ClCompile Include="ExportsView.cpp" />
     <ClCompile Include="GenericListView.cpp" />
+    <ClCompile Include="HexView.cpp" />
     <ClCompile Include="ImportsFrameView.cpp" />
     <ClCompile Include="ImportsFunctionsView.cpp" />
     <ClCompile Include="ImportsView.cpp" />
@@ -220,9 +222,11 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PEStrings.cpp" />
+    <ClCompile Include="ResourcesFrameView.cpp" />
     <ClCompile Include="ResourcesView.cpp" />
     <ClCompile Include="SectionsView.cpp" />
     <ClCompile Include="SortHelper.cpp" />
+    <ClCompile Include="StructureView.cpp" />
     <ClCompile Include="SummaryView.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -230,6 +234,8 @@
     <ClInclude Include="DataDirectoriesView.h" />
     <ClInclude Include="ExportsView.h" />
     <ClInclude Include="GenericListView.h" />
+    <ClInclude Include="HexView.h" />
+    <ClInclude Include="IMainFrame.h" />
     <ClInclude Include="ImportsFrameView.h" />
     <ClInclude Include="ImportsFunctionsView.h" />
     <ClInclude Include="ImportsView.h" />
@@ -237,9 +243,11 @@
     <ClInclude Include="PEStrings.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="ResourcesFrameView.h" />
     <ClInclude Include="ResourcesView.h" />
     <ClInclude Include="SectionsView.h" />
     <ClInclude Include="SortHelper.h" />
+    <ClInclude Include="StructureView.h" />
     <ClInclude Include="SummaryView.h" />
     <ClInclude Include="VirtualListView.h" />
   </ItemGroup>

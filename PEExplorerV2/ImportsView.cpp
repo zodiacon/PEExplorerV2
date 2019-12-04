@@ -9,7 +9,7 @@ ImportsView::ImportsView(PEParser* parser) : _parser(parser) {
 
 void ImportsView::Init(CListViewCtrl& lv) {
 	lv.InsertColumn(0, L"Library Name", LVCFMT_LEFT, 250);
-	lv.InsertColumn(1, L"Imports Count", LVCFMT_RIGHT, 100);
+	lv.InsertColumn(1, L"Count", LVCFMT_RIGHT, 80);
 
 	CImageList images;
 	images.Create(16, 16, ILC_COLOR32, 2, 0);

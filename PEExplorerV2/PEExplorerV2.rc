@@ -54,6 +54,8 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "Open in a &New Window...",    ID_FILE_OPENINANEWWINDOW
+        MENUITEM SEPARATOR
         MENUITEM "&Close",                      ID_FILE_CLOSE
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
@@ -61,6 +63,9 @@ BEGIN
     POPUP "&Edit"
     BEGIN
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM SEPARATOR
+        MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
+        MENUITEM "&Quick Find...",              ID_EDIT_FILTER
     END
     POPUP "&View"
     BEGIN
@@ -86,6 +91,14 @@ BEGIN
     POPUP "&Help"
     BEGIN
         MENUITEM "&About PE Explorer...",       ID_APP_ABOUT
+    END
+END
+
+IDR_CONTEXT MENU
+BEGIN
+    POPUP "section"
+    BEGIN
+        MENUITEM "View Data",                   ID_SECTION_VIEWDATA
     END
 END
 

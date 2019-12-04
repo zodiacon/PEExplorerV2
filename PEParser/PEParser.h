@@ -166,11 +166,13 @@ public:
 	int GetSectionCount() const;
 	const IMAGE_SECTION_HEADER* GetSectionHeader(ULONG section) const;
 	const IMAGE_DATA_DIRECTORY* GetDataDirectory(int index) const;
+	CString GetSectionName(ULONG section) const;
 
 	std::vector<ExportedSymbol> GetExports() const;
 	std::vector<ImportedLibrary> GetImports() const;
 	const IMAGE_FILE_HEADER& GetFileHeader() const;
 	std::vector<ResourceType> EnumResources() const;
+	bool GetImportAddressTable() const;
 
 	void* GetAddress(unsigned rva) const;
 

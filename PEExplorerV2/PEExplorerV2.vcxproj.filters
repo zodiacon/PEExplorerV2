@@ -66,6 +66,18 @@
     <ClCompile Include="DataDirectoriesView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="StructureView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourcesFrameView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CHexView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HexView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainFrm.h">
@@ -115,6 +127,18 @@
     </ClInclude>
     <ClInclude Include="DataDirectoriesView.h">
       <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="StructureView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourcesFrameView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HexView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IMainFrame.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -6,17 +6,22 @@
 
 #include "PEParser.h"
 #include "resource.h"
+#include "IMainFrame.h"
 
 class CMainFrame : 
 	public CFrameWindowImpl<CMainFrame>, 
 	public CUpdateUI<CMainFrame>,
-	public CMessageFilter, public CIdleHandler
+	public CMessageFilter, public CIdleHandler,
+	public IMainFrame
 {
 public:
+	CMainFrame();
+
 	DECLARE_FRAME_WND_CLASS(nullptr, IDR_MAINFRAME)
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual BOOL OnIdle();
+	void OnFinalMessage(HWND);
 
 	BEGIN_UPDATE_UI_MAP(CMainFrame)
 		UPDATE_ELEMENT(ID_VIEW_TOOLBAR, UPDUI_MENUPOPUP)
@@ -40,6 +45,7 @@ public:
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
 		COMMAND_ID_HANDLER(ID_WINDOW_CLOSEALL, OnWindowCloseAll)
 		COMMAND_ID_HANDLER(ID_WINDOW_CLOSE, OnWindowClose)
+		COMMAND_ID_HANDLER(ID_FILE_OPENINANEWWINDOW, OnOpenInNewWindow)
 		COMMAND_RANGE_HANDLER(ID_VIEW_SUMMARY, ID_VIEW_RESOURCES, OnViewDataItem)
 		COMMAND_RANGE_HANDLER(ID_WINDOW_TABFIRST, ID_WINDOW_TABLAST, OnWindowActivate)
 		COMMAND_RANGE_HANDLER(ID_FILE_RECENTFILES, ID_FILE_RECENTFILES + 9, OnRecentFile)
@@ -56,28 +62,24 @@ public:
 //	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
 
 private:
-	enum class TreeNodeType {
-		Root,
-		Summary,
-		Sections,
-		Directories,
-		Exports,
-		Imports,
-		Resources
-	};
 
 	void InitTree();
 	void UpdateUI();
 	void CreateNewTab(TreeNodeType type);
 	void SwitchToTab(TreeNodeType type);
-	void DoFileOpen(PCWSTR path);
+	void DoFileOpen(PCWSTR path, bool newWindow = false);
 	void AddRecentFiles(bool first = false);
 	void AddToRecentFiles(PCWSTR file);
 	bool SaveSettings();
 	bool LoadSettings();
+	CString GetFileNameToOpen();
 
 	template<typename T>
 	CTreeItem InsertTreeItem(PCWSTR text, int image, int selectedImage, T data = 0, HTREEITEM hParent = TVI_ROOT, HTREEITEM hAfter = TVI_LAST);
+
+	// IMainFrame
+	UINT ShowContextMenu(HMENU menu, const POINT& pt, DWORD flags) override;
+	CTreeItem CreateHexView(TreeNodeType type, PCWSTR title, LPARAM param) override;
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
@@ -95,6 +97,7 @@ private:
 	LRESULT OnDropFiles(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnWindowActivate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnRecentFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnOpenInNewWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
 	std::vector<CString> m_RecentFiles;
@@ -104,5 +107,7 @@ private:
 	CCommandBarCtrl m_CmdBar;
 	std::unique_ptr<PEParser> m_Parser;
 	CString m_FileName, m_FilePath;
+	std::unordered_map<int, CTreeItem> m_TreeNodes;
+	static int m_TotalFrames;
 };
 

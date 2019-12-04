@@ -12,20 +12,33 @@
 #include "ImportsView.h"
 #include "ImportsFrameView.h"
 #include "DataDirectoriesView.h"
-#include "ResourcesView.h"
+#include "ResourcesFrameView.h"
+#include "HexView.h"
+#include "HexControl/InMemoryBuffer.h"
 
 const DWORD ListViewDefaultStyle = WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA | LVS_SHOWSELALWAYS;
 
+int CMainFrame::m_TotalFrames = 0;
+
+CMainFrame::CMainFrame() {
+	m_TotalFrames++;
+}
+
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
-	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
+	if (m_view.PreTranslateMessage(pMsg))
 		return TRUE;
 
-	return m_view.PreTranslateMessage(pMsg);
+	return CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg);
 }
 
 BOOL CMainFrame::OnIdle() {
 	UIUpdateToolBar();
+	UIUpdateStatusBar();
 	return FALSE;
+}
+
+void CMainFrame::OnFinalMessage(HWND) {
+	delete this;
 }
 
 void CMainFrame::InitTree() {
@@ -91,7 +104,7 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 
 		case TreeNodeType::Sections:
 		{
-			auto view = new SectionsView(m_Parser.get());
+			auto view = new SectionsView(m_Parser.get(), this);
 			auto lv = new CGenericListView(view, true);
 			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
 			view->Init(*lv);
@@ -103,7 +116,7 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 		{
 			auto view = new DataDirectoriesView(m_Parser.get());
 			auto lv = new CGenericListView(view, true);
-			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
+			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle | LVS_NOSORTHEADER);
 			view->Init(*lv);
 			m_view.AddPage(*lv, L"Directories", 2, (PVOID)type);
 			break;
@@ -111,11 +124,9 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 
 		case TreeNodeType::Resources:
 		{
-			auto view = new ResourcesView(m_Parser.get());
-			auto lv = new CGenericListView(view, true);
-			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
-			view->Init(*lv);
-			m_view.AddPage(*lv, L"Resources", 5, (PVOID)type);
+			auto view = new CResourcesFrameView(m_Parser.get());
+			view->Create(m_view, nullptr, nullptr, WS_CHILD | WS_VISIBLE);
+			m_view.AddPage(*view, L"Resources", 5, (PVOID)type);
 			break;
 		}
 
@@ -133,24 +144,32 @@ void CMainFrame::SwitchToTab(TreeNodeType type) {
 	CreateNewTab(type);
 }
 
-void CMainFrame::DoFileOpen(PCWSTR path) {
+void CMainFrame::DoFileOpen(PCWSTR path, bool newWindow) {
 	auto file = std::make_unique<PEParser>(path);
 	if (!file->IsValid()) {
 		MessageBox(L"Error opening file.", L"PE Explorer", MB_ICONERROR);
 		return;
 	}
 
-	m_Parser = std::move(file);
-	m_FilePath = path;
+	if (!newWindow) {
+		m_Parser = std::move(file);
+		m_FilePath = path;
+
+		m_FileName = m_FilePath.Mid(m_FilePath.ReverseFind(L'\\') + 1);
+		CString title;
+		title.LoadString(IDR_MAINFRAME);
+		SetWindowText(title + L" (" + m_FilePath + L")");
+		m_view.RemoveAllPages();
+
+		InitTree();
+	}
+	else {
+		auto frame = new CMainFrame();
+		frame->CreateEx();
+		frame->DoFileOpen(path);
+		frame->ShowWindow(SW_SHOWDEFAULT);
+	}
 	AddToRecentFiles(path);
-
-	m_FileName = m_FilePath.Mid(m_FilePath.ReverseFind(L'\\') + 1);
-	CString title;
-	title.LoadString(IDR_MAINFRAME);
-	SetWindowText(title + L" (" + m_FilePath + L")");
-	m_view.RemoveAllPages();
-
-	InitTree();
 }
 
 void CMainFrame::AddRecentFiles(bool first) {
@@ -164,9 +183,9 @@ void CMainFrame::AddRecentFiles(bool first) {
 	for (auto& file : m_RecentFiles) {
 		popup.AppendMenuW(MF_BYCOMMAND, ID_FILE_RECENTFILES + i++, file);
 	}
-	menu.GetSubMenu(0).InsertMenu(3, MF_BYPOSITION, popup.Detach(), L"Recent Files");
+	menu.GetSubMenu(0).InsertMenu(5, MF_BYPOSITION, popup.Detach(), L"Recent Files");
 	if(m_RecentFiles.size() == 1 || first)
-		menu.GetSubMenu(0).InsertMenu(4, MF_BYPOSITION | MF_SEPARATOR, 0);
+		menu.GetSubMenu(0).InsertMenu(6, MF_BYPOSITION | MF_SEPARATOR, 0);
 }
 
 void CMainFrame::AddToRecentFiles(PCWSTR file) {
@@ -186,7 +205,7 @@ void CMainFrame::AddToRecentFiles(PCWSTR file) {
 	if (!empty) {
 		CMenuHandle menu(m_CmdBar.GetMenu());
 		menu = menu.GetSubMenu(0);
-		menu.DeleteMenu(3, MF_BYPOSITION);
+		menu.DeleteMenu(5, MF_BYPOSITION);
 	}
 	AddRecentFiles();
 }
@@ -220,6 +239,15 @@ bool CMainFrame::LoadSettings() {
 	}
 
 	return true;
+}
+
+CString CMainFrame::GetFileNameToOpen() {
+	CSimpleFileDialog dlg(TRUE, nullptr, nullptr, OFN_FILEMUSTEXIST | OFN_ENABLESIZING | OFN_EXPLORER,
+		L"All PE Files\0*.exe;*.dll;*.sys;*.efi;*.ocx;*.lib;*.obj\0"
+		L"Executables (*.exe)\0*.exe\0Dynamic Link Libraries (*.dll)\0*.dll\0"
+		L"Library Files (*.lib, *.obj)\0*.lib;*.obj\0"
+		L"All Files\0*.*\0", *this);
+	return dlg.DoModal() == IDOK ? dlg.m_szFileName : L"";
 }
 
 LRESULT CMainFrame::OnWindowClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -362,7 +390,10 @@ LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	pLoop->RemoveMessageFilter(this);
 	pLoop->RemoveIdleHandler(this);
 
-	bHandled = FALSE;
+	if(--m_TotalFrames == 0)
+		bHandled = FALSE;
+	else
+		bHandled = TRUE;
 	return 1;
 }
 
@@ -404,14 +435,11 @@ LRESULT CMainFrame::OnViewTreePane(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 }
 
 LRESULT CMainFrame::OnFileOpen(WORD, WORD, HWND, BOOL&) {
-	CSimpleFileDialog dlg(TRUE, nullptr, nullptr, OFN_FILEMUSTEXIST | OFN_ENABLESIZING | OFN_EXPLORER,
-		L"All PE Files\0*.exe;*.dll;*.sys;*.efi;*.ocx;*.lib;*.obj\0"
-		L"Executables (*.exe)\0*.exe\0Dynamic Link Libraries (*.dll)\0*.dll\0"
-		L"Library Files (*.lib, *.obj)\0*.lib;*.obj\0"
-		L"All Files\0*.*\0", *this);
-	if (dlg.DoModal() == IDOK) {
-		DoFileOpen(dlg.m_szFileName);
-	}
+	auto filename = GetFileNameToOpen();
+	if (filename.IsEmpty())
+		return 0;
+
+	DoFileOpen(filename);
 	return 0;
 }
 
@@ -470,10 +498,44 @@ LRESULT CMainFrame::OnRecentFile(WORD, WORD id, HWND, BOOL&) {
 	return 0;
 }
 
+LRESULT CMainFrame::OnOpenInNewWindow(WORD, WORD, HWND, BOOL&) {
+	auto path = GetFileNameToOpen();
+	if (path.IsEmpty())
+		return 0;
+	DoFileOpen(path, true);
+	return 0;
+}
+
+CTreeItem CMainFrame::CreateHexView(TreeNodeType type, PCWSTR title, LPARAM param) {
+	if (type == TreeNodeType::SectionView) {
+		auto number = (ULONG)param;
+		auto section = m_Parser->GetSectionHeader(number);
+		std::unique_ptr<IBufferManager> buffer = std::make_unique<InMemoryBuffer>();
+		buffer->SetData(0, (const BYTE*)m_Parser->GetAddress(section->PointerToRawData), section->SizeOfRawData);	
+		auto name = m_Parser->GetSectionName(number);
+		auto node = m_TreeNodes[(int)TreeNodeType::Sections].InsertAfter(name, nullptr, 1);
+		node.EnsureVisible();
+		int data = (int)TreeNodeType::Sections + number;
+		node.SetData(data);
+		m_TreeNodes.insert({ data, node });
+		auto view = new CHexView(std::move(buffer), node);
+		view->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
+		m_view.AddPage(*view, name, 1, (PVOID)data);
+		return node;
+	}
+	ATLASSERT(false);
+	return CTreeItem();
+}
+
+UINT CMainFrame::ShowContextMenu(HMENU menu, const POINT& pt, DWORD flags) {
+	return (UINT)m_CmdBar.TrackPopupMenu(menu, flags, pt.x, pt.y);
+}
+
 template<typename T>
 inline CTreeItem CMainFrame::InsertTreeItem(PCWSTR text, int image, int selectedImage, T data, HTREEITEM hParent, HTREEITEM hAfter) {
 	auto item = m_tree.InsertItem(text, image, selectedImage, hParent, hAfter);
 	item.SetData(static_cast<DWORD_PTR>(data));
+	m_TreeNodes.insert({ static_cast<int>(data), item });
 	return item;
 }
 

@@ -12,6 +12,7 @@ struct IGenericListViewCallback {
 	virtual bool CanSort(int column) const {
 		return true;
 	}
+	virtual void OnContextMenu(const POINT& pt, int selected) {}
 };
 
 class CGenericListView :
@@ -25,6 +26,7 @@ public:
 	BEGIN_MSG_MAP(CGenericListView)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		REFLECTED_NOTIFY_CODE_HANDLER(LVN_GETDISPINFO, OnGetDispInfo)
+		MESSAGE_HANDLER(WM_CONTEXTMENU, OnContextMenu)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		CHAIN_MSG_MAP_ALT(CVirtualListView<CGenericListView>, 1)
 	END_MSG_MAP()
@@ -37,6 +39,7 @@ private:
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnGetDispInfo(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT OnContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 private:
 	IGenericListViewCallback* m_Callback;

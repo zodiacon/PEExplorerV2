@@ -3,8 +3,10 @@
 #include "PEStrings.h"
 #include <algorithm>
 #include "SortHelper.h"
+#include "resource.h"
 
-SectionsView::SectionsView(PEParser* parser) : _parser(parser) {
+SectionsView::SectionsView(PEParser* parser, IMainFrame* frame) 
+	: _parser(parser), _frame(frame) {
 	_sections = std::make_unique<PIMAGE_SECTION_HEADER[]>(_parser->GetSectionCount());
 	for (int i = 0; i < _parser->GetSectionCount(); i++)
 		_sections[i] = const_cast<PIMAGE_SECTION_HEADER>(_parser->GetSectionHeader(i));
@@ -42,6 +44,15 @@ bool SectionsView::Sort(int column, bool ascending) {
 		return CompareItems(s1, s2, column, ascending);
 		});
 	return true;
+}
+
+void SectionsView::OnContextMenu(const POINT& pt, int index) {
+	CMenuHandle menu;
+	menu.LoadMenuW(IDR_CONTEXT);
+	auto cmd = _frame->ShowContextMenu(menu.GetSubMenu(0), pt, TPM_RETURNCMD);
+	if (cmd == ID_SECTION_VIEWDATA) {
+		_frame->CreateHexView(TreeNodeType::SectionView, nullptr, index);
+	}
 }
 
 CString SectionsView::GetSectionCharacteristics(DWORD c) const {

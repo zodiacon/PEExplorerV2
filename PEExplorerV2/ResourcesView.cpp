@@ -53,6 +53,10 @@ bool ResourcesView::Sort(int column, bool ascending) {
 	return true;
 }
 
+const ResourceItem& ResourcesView::GetResource(int index) const {
+	return _items[index];
+}
+
 bool ResourcesView::CompareItems(const ResourceItem& res1, const ResourceItem& res2, int col, bool asc) {
 	switch (col) {
 		case 0:

@@ -68,6 +68,16 @@ const IMAGE_DATA_DIRECTORY* PEParser::GetDataDirectory(int index) const {
 	return &GetOptionalHeader32().DataDirectory[index];
 }
 
+CString PEParser::GetSectionName(ULONG section) const {
+	auto header = GetSectionHeader(section);
+	if (header == nullptr)
+		return L"";
+
+	if (header->Name[IMAGE_SIZEOF_SHORT_NAME - 1] == '\0')
+		return CString((PCSTR)header->Name);
+	return CString((PCSTR)header->Name, IMAGE_SIZEOF_SHORT_NAME);
+}
+
 std::vector<ExportedSymbol> PEParser::GetExports() const {
 	std::vector<ExportedSymbol> exports;
 	auto dir = GetDataDirectory(IMAGE_DIRECTORY_ENTRY_EXPORT);
@@ -121,25 +131,16 @@ std::vector<ImportedLibrary> PEParser::GetImports() const {
 	if (dir->Size == 0)
 		return libs;
 
-	struct IMAGE_IMPORT_DIRECTORY {
-		int ImportLookupTable;
-		int TimeDateStamp;
-		int ForwarderChain;
-		int NameRva;
-		int ImportAddressTable;
-	};
-
-	auto imports = static_cast<IMAGE_IMPORT_DIRECTORY*>(GetAddress(dir->VirtualAddress));
+	auto imports = static_cast<IMAGE_IMPORT_DESCRIPTOR*>(GetAddress(dir->VirtualAddress));
 	auto inc = IsPe64() ? 8 : 4;
 	char undecorated[1 << 10];
 
 	for (;;) {
-		auto offset = imports->ImportLookupTable == 0 ? imports->ImportAddressTable : imports->ImportLookupTable;
+		auto offset = imports->OriginalFirstThunk == 0 ? imports->FirstThunk : imports->OriginalFirstThunk;
 		if (offset == 0)
 			break;
 		auto iat = static_cast<PBYTE>(GetAddress(offset));
-		auto hintNameTable = static_cast<PBYTE>(GetAddress(imports->ImportAddressTable));
-		auto libName = static_cast<PBYTE>(GetAddress(imports->NameRva));
+		auto libName = static_cast<PBYTE>(GetAddress(imports->Name));
 
 		ImportedLibrary lib;
 		lib.Name = (PCSTR)libName;
@@ -169,10 +170,10 @@ std::vector<ImportedLibrary> PEParser::GetImports() const {
 			}
 			if (nameRva == 0)
 				break;
-			auto p = static_cast<PBYTE>(GetAddress(nameRva));
+			auto p = static_cast<IMAGE_IMPORT_BY_NAME*>(GetAddress(nameRva));
 			ImportedSymbol symbol;
-			symbol.Hint = *(unsigned short*)p;
-			symbol.Name = (PCSTR)(p + 2);
+			symbol.Hint = p->Hint;
+			symbol.Name = p->Name;
 			if (::UnDecorateSymbolName(symbol.Name.c_str(), undecorated, sizeof(undecorated), 0))
 				symbol.UndecoratedName = undecorated;
 
@@ -215,7 +216,10 @@ void PEParser::CheckValidity() {
 		return;
 
 	auto ntHeader = (IMAGE_NT_HEADERS*)((PBYTE)_dosHeader + _dosHeader->e_lfanew);
+	if (ntHeader->Signature != IMAGE_NT_SIGNATURE)
+		return;
 	_fileHeader = &ntHeader->FileHeader;
+
 	_opt32 = (IMAGE_OPTIONAL_HEADER32*)&ntHeader->OptionalHeader;
 	_opt64 = (IMAGE_OPTIONAL_HEADER64*)&ntHeader->OptionalHeader;
 	_sections = IsPe64() ? (PIMAGE_SECTION_HEADER)(_opt64 + 1) : (PIMAGE_SECTION_HEADER)(_opt32 + 1);
@@ -326,4 +330,14 @@ std::vector<ResourceType> PEParser::EnumResources() const {
 		}, reinterpret_cast<LONG_PTR>(&context));
 
 	return types;
+}
+
+bool PEParser::GetImportAddressTable() const {
+	auto dir = GetDataDirectory(IMAGE_DIRECTORY_ENTRY_IAT);
+	if (dir->Size == 0)
+		return false;
+
+	auto table = static_cast<IMAGE_THUNK_DATA64*>(GetAddress(dir->VirtualAddress));
+	
+	return true;
 }

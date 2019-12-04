@@ -16,8 +16,8 @@ int DataDirectoriesView::GetItemCount() {
 	if (_dirs[0].Name.IsEmpty()) {
 		PCWSTR names[] = {
 			L"Export", L"Import", L"Resource", L"Exception", L"Security", L"Base Relocation",
-			L"Debug", L"Architecture", L"Global Pointer", L"TLS", L"Load Config",
-			L"Bound Import", L"IAT", L"Delay Import", L"COM Descriptor"
+			L"Debug", L"Architecture", L"Global Pointer", L"Thread Local Storage (TLS)", L"Load Config",
+			L"Bound Import", L"Import Address Table (IAT)", L"Delay Import", L"COM Descriptor (CLR)"
 		};
 
 		ATLASSERT(_countof(names) == _countof(_dirs));

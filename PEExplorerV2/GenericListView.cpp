@@ -52,3 +52,16 @@ LRESULT CGenericListView::OnGetDispInfo(int, LPNMHDR hdr, BOOL&) {
 	}
 	return 0;
 }
+
+LRESULT CGenericListView::OnContextMenu(UINT, WPARAM, LPARAM lParam, BOOL&) {
+	CPoint pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+	auto selected = GetSelectedCount() == 0 ? -1 : GetNextItem(-1, LVIS_SELECTED);
+	if (selected >= 0 && pt.x == -1) {	// keyboard 
+		CRect rc;
+		GetItemRect(selected, &rc, LVIR_LABEL);
+		pt = rc.CenterPoint();
+	}
+	m_Callback->OnContextMenu(pt, selected);
+
+	return 0;
+}

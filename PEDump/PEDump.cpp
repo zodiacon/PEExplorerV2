@@ -19,6 +19,8 @@ int wmain(int argc, const wchar_t* argv[]) {
 
 	printf("PE file: %ws\n", argv[1]);
 
+	parser.GetImportAddressTable();
+
 	auto resources = parser.EnumResources();
 	for (auto& type : resources) {
 		printf("%ws\n", (PCWSTR)type.Name);
