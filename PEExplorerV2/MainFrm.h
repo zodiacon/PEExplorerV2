@@ -66,7 +66,7 @@ private:
 	void InitTree();
 	void UpdateUI();
 	void CreateNewTab(TreeNodeType type);
-	void SwitchToTab(TreeNodeType type);
+	bool SwitchToTab(TreeNodeType type);
 	void DoFileOpen(PCWSTR path, bool newWindow = false);
 	void AddRecentFiles(bool first = false);
 	void AddToRecentFiles(PCWSTR file);

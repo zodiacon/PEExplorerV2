@@ -41,14 +41,14 @@
 #define ID_EDIT_FIND32796               32796
 #define ID_EDIT_FILTER                  32797
 #define ID_FILE_OPENINANEWWINDOW        32798
-#define ID_SECTION_VIEWDATA             32799
+#define ID_OBJECT_VIEWDATA              32799
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        223
-#define _APS_NEXT_COMMAND_VALUE         32800
+#define _APS_NEXT_COMMAND_VALUE         32802
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

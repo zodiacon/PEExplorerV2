@@ -5,6 +5,8 @@
 
 class CHexView : public CWindowImpl<CHexView> {
 public:
+	DECLARE_WND_CLASS_EX(nullptr, 0, NULL);
+
 	CHexView(std::unique_ptr<IBufferManager> buffer, CTreeItem treeItem);
 
 	IHexControl& GetHexControl();

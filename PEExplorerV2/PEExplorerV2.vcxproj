@@ -234,6 +234,10 @@
     <ClInclude Include="DataDirectoriesView.h" />
     <ClInclude Include="ExportsView.h" />
     <ClInclude Include="GenericListView.h" />
+    <ClInclude Include="HexControl\EditCommandBase.h" />
+    <ClInclude Include="HexControl\HexControl.h" />
+    <ClInclude Include="HexControl\IHexControl.h" />
+    <ClInclude Include="HexControl\InMemoryBuffer.h" />
     <ClInclude Include="HexView.h" />
     <ClInclude Include="IMainFrame.h" />
     <ClInclude Include="ImportsFrameView.h" />

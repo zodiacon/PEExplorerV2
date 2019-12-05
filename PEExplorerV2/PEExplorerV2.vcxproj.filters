@@ -19,6 +19,9 @@
     <Filter Include="Views">
       <UniqueIdentifier>{53de5ee2-490f-4142-af7f-87292c581520}</UniqueIdentifier>
     </Filter>
+    <Filter Include="HexControl">
+      <UniqueIdentifier>{8f0c089b-495b-4968-b122-f066cf2385ee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PEExplorerV2.cpp">
@@ -139,6 +142,18 @@
     </ClInclude>
     <ClInclude Include="IMainFrame.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HexControl\EditCommandBase.h">
+      <Filter>HexControl</Filter>
+    </ClInclude>
+    <ClInclude Include="HexControl\HexControl.h">
+      <Filter>HexControl</Filter>
+    </ClInclude>
+    <ClInclude Include="HexControl\IHexControl.h">
+      <Filter>HexControl</Filter>
+    </ClInclude>
+    <ClInclude Include="HexControl\InMemoryBuffer.h">
+      <Filter>HexControl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

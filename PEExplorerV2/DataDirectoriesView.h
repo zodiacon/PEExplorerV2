@@ -2,10 +2,11 @@
 
 #include "GenericListView.h"
 #include "PEParser.h"
+#include "IMainFrame.h"
 
 class DataDirectoriesView : public IGenericListViewCallback {
 public:
-	DataDirectoriesView(PEParser* parser);
+	DataDirectoriesView(PEParser* parser, IMainFrame* frame);
 	void Init(CListViewCtrl& lv);
 
 	// IGenericListViewCallback
@@ -15,6 +16,7 @@ public:
 	bool CanSort(int col) const override {
 		return false;
 	}
+	void OnContextMenu(const POINT& pt, int index) override;
 
 private:
 	struct DataDirectory {
@@ -25,5 +27,6 @@ private:
 	};
 	PEParser* _parser;
 	DataDirectory _dirs[15];
+	IMainFrame* _frame;
 };
 

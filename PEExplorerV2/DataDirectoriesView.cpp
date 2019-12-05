@@ -1,8 +1,10 @@
 #include "pch.h"
 #include "DataDirectoriesView.h"
 #include "PEStrings.h"
+#include "resource.h"
 
-DataDirectoriesView::DataDirectoriesView(PEParser* parser) : _parser(parser) {
+DataDirectoriesView::DataDirectoriesView(PEParser* parser, IMainFrame* frame) 
+	: _parser(parser), _frame(frame) {
 }
 
 void DataDirectoriesView::Init(CListViewCtrl& lv) {
@@ -48,4 +50,13 @@ CString DataDirectoriesView::GetItemText(int row, int col) {
 
 bool DataDirectoriesView::Sort(int column, bool ascending) {
 	return false;
+}
+
+void DataDirectoriesView::OnContextMenu(const POINT& pt, int index) {
+	CMenuHandle menu;
+	menu.LoadMenuW(IDR_CONTEXT);
+	auto cmd = _frame->ShowContextMenu(menu.GetSubMenu(0), pt, TPM_RETURNCMD);
+	if (cmd == ID_OBJECT_VIEWDATA) {
+		_frame->CreateHexView(TreeNodeType::DirectoryView, _dirs[index].Name, index);
+	}
 }

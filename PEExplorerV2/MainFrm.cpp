@@ -44,7 +44,7 @@ void CMainFrame::OnFinalMessage(HWND) {
 void CMainFrame::InitTree() {
 	m_tree.LockWindowUpdate();
 	m_tree.DeleteAllItems();
-	
+
 	auto rootIcon = m_Parser->IsExecutable() ? 6 : 7;
 	auto root = InsertTreeItem(m_FileName, rootIcon, rootIcon, TreeNodeType::Root);
 	InsertTreeItem(L"Summary", 0, 0, TreeNodeType::Summary, root);
@@ -114,7 +114,7 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 
 		case TreeNodeType::Directories:
 		{
-			auto view = new DataDirectoriesView(m_Parser.get());
+			auto view = new DataDirectoriesView(m_Parser.get(), this);
 			auto lv = new CGenericListView(view, true);
 			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle | LVS_NOSORTHEADER);
 			view->Init(*lv);
@@ -133,15 +133,16 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 	}
 }
 
-void CMainFrame::SwitchToTab(TreeNodeType type) {
+bool CMainFrame::SwitchToTab(TreeNodeType type) {
 	for (int page = 0; page < m_view.GetPageCount(); page++)
 		if ((DWORD_PTR)m_view.GetPageData(page) == (DWORD_PTR)type) {
 			m_view.SetActivePage(page);
-			return;
+			return true;
 		}
 
 	// create a new page
 	CreateNewTab(type);
+	return false;
 }
 
 void CMainFrame::DoFileOpen(PCWSTR path, bool newWindow) {
@@ -184,7 +185,7 @@ void CMainFrame::AddRecentFiles(bool first) {
 		popup.AppendMenuW(MF_BYCOMMAND, ID_FILE_RECENTFILES + i++, file);
 	}
 	menu.GetSubMenu(0).InsertMenu(5, MF_BYPOSITION, popup.Detach(), L"Recent Files");
-	if(m_RecentFiles.size() == 1 || first)
+	if (m_RecentFiles.size() == 1 || first)
 		menu.GetSubMenu(0).InsertMenu(6, MF_BYPOSITION | MF_SEPARATOR, 0);
 }
 
@@ -230,7 +231,7 @@ bool CMainFrame::LoadSettings() {
 
 	::wcscat_s(path, L"\\PEExplorerV2.ini");
 	WCHAR file[MAX_PATH];
-	for(int i = 0; i < 10; i++) {
+	for (int i = 0; i < 10; i++) {
 		if (!::GetPrivateProfileString(L"RecentFiles", (L"File" + std::to_wstring(i)).c_str(), L"", file, MAX_PATH, path))
 			break;
 		if (*file == L'\0')
@@ -253,7 +254,9 @@ CString CMainFrame::GetFileNameToOpen() {
 LRESULT CMainFrame::OnWindowClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int nActivePage = m_view.GetActivePage();
 	if (nActivePage != -1) {
+		auto data = PtrToInt(m_view.GetPageData(nActivePage));
 		m_view.RemovePage(nActivePage);
+		m_TreeNodes.erase(data);
 	}
 	else
 		::MessageBeep((UINT)-1);
@@ -332,7 +335,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	m_hWndClient = m_splitter.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 
-	m_tree.Create(m_splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | TVS_HASLINES | 
+	m_tree.Create(m_splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | TVS_HASLINES |
 		TVS_LINESATROOT | TVS_HASBUTTONS | TVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE);
 	m_view.Create(m_splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
 
@@ -390,7 +393,7 @@ LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	pLoop->RemoveMessageFilter(this);
 	pLoop->RemoveIdleHandler(this);
 
-	if(--m_TotalFrames == 0)
+	if (--m_TotalFrames == 0)
 		bHandled = FALSE;
 	else
 		bHandled = TRUE;
@@ -463,7 +466,7 @@ LRESULT CMainFrame::OnTreeItemDoubleClick(int, LPNMHDR hdr, BOOL&) {
 }
 
 LRESULT CMainFrame::OnViewDataItem(WORD, WORD id, HWND, BOOL&) {
-	SwitchToTab((TreeNodeType) (id - ID_VIEW_SUMMARY + 1));
+	SwitchToTab((TreeNodeType)(id - ID_VIEW_SUMMARY + 1));
 	return 0;
 }
 
@@ -493,7 +496,7 @@ LRESULT CMainFrame::OnRecentFile(WORD, WORD id, HWND, BOOL&) {
 	auto path = m_RecentFiles[index];
 	if (path == m_FilePath)
 		return 0;
-	
+
 	DoFileOpen(path);
 	return 0;
 }
@@ -507,22 +510,42 @@ LRESULT CMainFrame::OnOpenInNewWindow(WORD, WORD, HWND, BOOL&) {
 }
 
 CTreeItem CMainFrame::CreateHexView(TreeNodeType type, PCWSTR title, LPARAM param) {
-	if (type == TreeNodeType::SectionView) {
-		auto number = (ULONG)param;
-		auto section = m_Parser->GetSectionHeader(number);
-		std::unique_ptr<IBufferManager> buffer = std::make_unique<InMemoryBuffer>();
-		buffer->SetData(0, (const BYTE*)m_Parser->GetAddress(section->PointerToRawData), section->SizeOfRawData);	
-		auto name = m_Parser->GetSectionName(number);
-		auto node = m_TreeNodes[(int)TreeNodeType::Sections].InsertAfter(name, nullptr, 1);
-		node.EnsureVisible();
-		int data = (int)TreeNodeType::Sections + number;
-		node.SetData(data);
-		m_TreeNodes.insert({ data, node });
-		auto view = new CHexView(std::move(buffer), node);
-		view->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
-		m_view.AddPage(*view, name, 1, (PVOID)data);
-		return node;
+	switch (type) {
+		case TreeNodeType::SectionView:
+		case TreeNodeType::DirectoryView:
+		{
+			auto number = (int)param;
+			auto data = int(type) + number;
+			auto it = m_TreeNodes.find(data);
+			if (it != m_TreeNodes.end()) {
+				ATLVERIFY(SwitchToTab((TreeNodeType)data));
+				return it->second;
+			}
+
+			std::unique_ptr<IBufferManager> buffer = std::make_unique<InMemoryBuffer>();
+			if (type == TreeNodeType::SectionView) {
+				auto section = m_Parser->GetSectionHeader(number);
+				buffer->SetData(0, (const BYTE*)m_Parser->GetAddress(section->PointerToRawData), section->SizeOfRawData);
+			}
+			else {
+				auto dir = m_Parser->GetDataDirectory(number);
+				ATLASSERT(dir);
+				buffer->SetData(0, (const BYTE*)m_Parser->GetAddress(dir->VirtualAddress), dir->Size);
+			}
+			int image = type == TreeNodeType::SectionView ? 1 : 2;
+			auto node = m_TreeNodes[int(type == TreeNodeType::SectionView ? TreeNodeType::Sections : TreeNodeType::Directories)]
+				.InsertAfter(title, nullptr, image);
+			node.EnsureVisible();
+			node.SetData(data);
+			m_TreeNodes.insert({ data, node });
+			auto view = new CHexView(std::move(buffer), node);
+			view->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
+			m_view.AddPage(*view, title, image, IntToPtr(data));
+			return node;
+		}
+
 	}
+
 	ATLASSERT(false);
 	return CTreeItem();
 }

@@ -18,10 +18,8 @@ enum class TreeNodeType {
 	OptionalHeader,
 
 	SectionView = 0x200,
-	SectionViewLast = 0x2ff,
 
 	DirectoryView = 0x300,
-	DirectoryViewLast = 0x30f,
 };
 
 struct IMainFrame {

@@ -9,7 +9,7 @@ class CHexControl :
 public:
 	//	enum { uSCROLL_FLAGS = SW_INVALIDATE };
 
-	DECLARE_WND_CLASS_EX(_T("WTLHexControl"), CS_OWNDC | CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS | CS_SAVEBITS, NULL)
+	DECLARE_WND_CLASS_EX(_T("WTLHexControl"), CS_OWNDC | CS_DBLCLKS, COLOR_WINDOW)
 
 	CHexControl();
 
@@ -40,7 +40,7 @@ public:
 		MESSAGE_HANDLER(WM_MOUSEWHEEL, OnMouseWheel)
 		MESSAGE_HANDLER(WM_GETDLGCODE, OnGetDialogCode)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, OnContextMenu)
-		MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBkgnd)
+		//MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBkgnd)
 	END_MSG_MAP()
 
 	// message handlers
@@ -80,7 +80,7 @@ public:
 	void SetDataColor(COLORREF color = CLR_INVALID);
 	void SetAsciiColor(COLORREF color = CLR_INVALID);
 	void SetBackColor(COLORREF color = CLR_INVALID);
-	bool Copy(int64_t offset = -1, int32_t size = 0);
+	bool Copy(int64_t offset = -1, int64_t size = 0);
 	bool CanCopy() const override;
 	bool Paste(int64_t offset = -1);
 	bool CanPaste() const override;
@@ -88,11 +88,14 @@ public:
 	COLORREF GetDataColor() const;
 	COLORREF GetAsciiColor() const;
 	COLORREF GetBackColor() const;
-	bool Cut(int64_t offset = -1, int32_t size = 0) override;
-	bool Delete(int64_t offset = -1, int32_t size = 0) override;
+	bool Cut(int64_t offset = -1, int64_t size = 0) override;
+	bool Delete(int64_t offset = -1, int64_t size = 0) override;
 	bool CanCut() const override;
 	bool CanDelete() const override;
 	bool IsSelected(int64_t offset) const;
+	int64_t SetBiasOffset(int64_t offset) override;
+	int64_t GetBiasOffset() const override;
+	CString GetText(int64_t offset, int64_t size) override;
 
 protected:
 	PCWSTR FormatNumber(ULONGLONG number);
@@ -107,7 +110,6 @@ protected:
 	void UpdateData(EditCommandBase* cmd);
 	void DrawOffset(int64_t offset);
 	void DrawAsciiChar(int64_t offset, uint8_t ch);
-	CString GetText(int64_t offset, uint32_t size);
 
 	class CommandManager {
 	public:
@@ -135,19 +137,23 @@ private:
 	COLORREF m_clrAddress{ CLR_INVALID }, m_clrData{ CLR_INVALID }, m_clrAscii{ CLR_INVALID };
 	COLORREF m_clrBack{ CLR_INVALID };
 	int64_t m_SelStart{ -1 };
-	uint32_t m_SelLength;
+	int64_t m_SelLength;
 	int64_t m_StartOffset{ 0 }, m_EndOffset, m_CurrentOffset{ -1 };
+	int64_t m_BiasOffset{ 0 };
 	int32_t m_BytesPerLine{ 32 }, m_DataSize{ 1 };
 	uint64_t m_OldValue;
 	int m_Width, m_Height;
 	IBufferManager* m_Buffer{ nullptr };
 	int m_CharHeight, m_CharWidth;
 	CSize m_Margin{ 2, 2 };
+	CPoint m_ViewportOrg;
 	int m_EditDigits{ 0 };
 	uint64_t m_CurrentInput{ 0 };
-	bool m_ReadOnly{ false };
+	CSize m_Size;
+	bool m_ReadOnly{ true };
 	bool m_AllowExtension{ true };
 	bool m_InsertMode{ false };
 	bool m_AsciiSelected;
+
 };
 

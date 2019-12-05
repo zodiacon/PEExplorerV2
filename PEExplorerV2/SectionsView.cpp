@@ -50,8 +50,8 @@ void SectionsView::OnContextMenu(const POINT& pt, int index) {
 	CMenuHandle menu;
 	menu.LoadMenuW(IDR_CONTEXT);
 	auto cmd = _frame->ShowContextMenu(menu.GetSubMenu(0), pt, TPM_RETURNCMD);
-	if (cmd == ID_SECTION_VIEWDATA) {
-		_frame->CreateHexView(TreeNodeType::SectionView, nullptr, index);
+	if (cmd == ID_OBJECT_VIEWDATA) {
+		_frame->CreateHexView(TreeNodeType::SectionView, _parser->GetSectionName(index), index);
 	}
 }
 
