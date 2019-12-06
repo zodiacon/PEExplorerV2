@@ -96,6 +96,7 @@ public:
 	int64_t SetBiasOffset(int64_t offset) override;
 	int64_t GetBiasOffset() const override;
 	CString GetText(int64_t offset, int64_t size) override;
+	IBufferManager* GetBufferManager() const override;
 
 protected:
 	PCWSTR FormatNumber(ULONGLONG number);

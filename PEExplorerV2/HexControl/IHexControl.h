@@ -36,4 +36,5 @@ struct IHexControl {
 	virtual int64_t SetBiasOffset(int64_t offset) = 0;
 	virtual int64_t GetBiasOffset() const = 0;
 	virtual CString GetText(int64_t offset, int64_t size) = 0;
+	virtual IBufferManager* GetBufferManager() const = 0;
 };

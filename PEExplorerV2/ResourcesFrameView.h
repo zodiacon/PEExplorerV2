@@ -1,8 +1,7 @@
 #pragma once
 
 #include "ResourcesView.h"
-#include "HexControl/HexControl.h"
-#include "HexControl/IHexControl.h"
+#include "HexView.h"
 
 class PEParser;
 
@@ -30,7 +29,7 @@ private:
 private:
 	CSplitterWindow m_splitter;
 	CGenericListView m_resView;
-	CHexControl m_hexView;
+	CHexView m_hexView;
 	ResourcesView m_resViewImpl;
 	std::unique_ptr<IBufferManager> m_buffer;
 };

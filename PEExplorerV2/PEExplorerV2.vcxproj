@@ -205,7 +205,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
-    <ClCompile Include="CHexView.cpp" />
     <ClCompile Include="DataDirectoriesView.cpp" />
     <ClCompile Include="ExportsView.cpp" />
     <ClCompile Include="GenericListView.cpp" />
@@ -276,10 +275,15 @@
     <Image Include="res\method-export.ico" />
     <Image Include="res\method-friend.ico" />
     <Image Include="res\method-import.ico" />
+    <Image Include="res\number-1.ico" />
+    <Image Include="res\number-2.ico" />
+    <Image Include="res\number-4.ico" />
+    <Image Include="res\number-8.ico" />
     <Image Include="res\open.ico" />
     <Image Include="res\PEExplorerV2.ico" />
     <Image Include="res\pin_blue.ico" />
     <Image Include="res\resources.ico" />
+    <Image Include="res\save.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

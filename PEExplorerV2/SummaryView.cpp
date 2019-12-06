@@ -31,7 +31,7 @@ int SummaryView::GetItemCount() {
 	_items.push_back(Item(L"Machine", PEStrings::ToDecAndHex(fh.Machine), PEStrings::MachineTypeToString((MachineType)fh.Machine)));
 	_items.push_back(Item(L"Image Characteristics", PEStrings::ToDecAndHex(fh.Characteristics), PEStrings::CharacteristicsToString((ImageCharacteristics)fh.Characteristics)));
 	_items.push_back(Item(L"DLL Characteristics", PEStrings::ToDecAndHex(dllChar), PEStrings::DllCharacteristicsToString((DllCharacteristics)dllChar)));
-	_items.push_back(Item(L"Is managed", _parser->IsManaged() ? L"Yes" : L"No"));
+	_items.push_back(Item(L"Is Managed", _parser->IsManaged() ? L"Yes" : L"No"));
 	_items.push_back(Item(L"Image Base", PEStrings::ToHex(pe64 ? oh64.ImageBase : oh32.ImageBase)));
 	_items.push_back(Item(L"Heap Commit", PEStrings::ToMemorySize(pe64 ? oh64.SizeOfHeapCommit : oh32.SizeOfHeapCommit)));
 	_items.push_back(Item(L"Heap Reserve", PEStrings::ToMemorySize(pe64 ? oh64.SizeOfHeapReserve : oh32.SizeOfHeapReserve)));

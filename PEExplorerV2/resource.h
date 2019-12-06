@@ -3,6 +3,7 @@
 // Used by PEExplorerV2.rc
 //
 #define IDD_ABOUTBOX                    100
+#define ID_FILE_EXPORT                  101
 #define IDR_MAINFRAME                   128
 #define IDI_CLOSE                       202
 #define IDI_COPY                        203
@@ -26,6 +27,12 @@
 #define IDI_APISET_LIB                  221
 #define IDR_MENU1                       222
 #define IDR_CONTEXT                     222
+#define IDI_NUM1                        223
+#define IDI_NUM2                        224
+#define IDI_NUM4                        225
+#define IDI_NUM8                        226
+#define IDI_ICON1                       227
+#define IDI_SAVE                        227
 #define ID_VIEW_TREEPANE                32774
 #define ID_OPTIONS_ALWAYSONTOP          32775
 #define ID_FILE_CLOSE32776              32776
@@ -47,9 +54,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        223
+#define _APS_NEXT_RESOURCE_VALUE        228
 #define _APS_NEXT_COMMAND_VALUE         32802
 #define _APS_NEXT_CONTROL_VALUE         1000
-#define _APS_NEXT_SYMED_VALUE           101
+#define _APS_NEXT_SYMED_VALUE           102
 #endif
 #endif

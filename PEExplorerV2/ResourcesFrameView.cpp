@@ -20,8 +20,8 @@ LRESULT CResourcesFrameView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_resViewImpl.Init(m_resView);
 
 	m_hexView.Create(m_splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE, IDC_HEX);
-	m_hexView.SetReadOnly(true);
-	m_hexView.SetBytesPerLine(16);
+	auto& hex = m_hexView.GetHexControl();
+	hex.SetBytesPerLine(16);
 
 	m_splitter.SetSplitterPanes(m_resView, m_hexView);
 	m_splitter.SetSplitterPosPct(40);
@@ -40,14 +40,17 @@ LRESULT CResourcesFrameView::OnEraseBkgnd(UINT, WPARAM, LPARAM, BOOL&) {
 
 LRESULT CResourcesFrameView::OnResourceChanged(int, LPNMHDR, BOOL&) {
 	auto index = m_resView.GetSelectedIndex();
-	if (index < 0)
-		m_hexView.SetBufferManager(nullptr);
+	auto& hex = m_hexView.GetHexControl();
+	if (index < 0) {
+		hex.SetBufferManager(nullptr);
+		m_hexView.EnableWindow(FALSE);
+	}
 	else {
 		auto res = m_resViewImpl.GetResource(index);
 		m_buffer = std::make_unique<InMemoryBuffer>();
 		m_buffer->SetData(0, (const BYTE*)res.Resource.Address, res.Resource.Size);
-		m_hexView.SetBufferManager(m_buffer.get());
-		m_hexView.Invalidate();
+		hex.SetBufferManager(m_buffer.get());
+		m_hexView.EnableWindow();
 	}
 	return 0;
 }

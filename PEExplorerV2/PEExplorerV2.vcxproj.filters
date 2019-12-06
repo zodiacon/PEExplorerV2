@@ -72,14 +72,11 @@
     <ClCompile Include="StructureView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
-    <ClCompile Include="ResourcesFrameView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CHexView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="HexView.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourcesFrameView.cpp">
+      <Filter>Views</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -224,6 +221,21 @@
     </Image>
     <Image Include="res\method-friend.ico">
       <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\number-1.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\number-2.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\number-4.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\number-8.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\save.ico">
+      <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

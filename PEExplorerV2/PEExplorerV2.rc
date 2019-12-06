@@ -152,6 +152,16 @@ IDI_LIBRARY_IMPORT      ICON                    "res\\library-import.ico"
 
 IDI_APISET_LIB          ICON                    "res\\library-friend.ico"
 
+IDI_NUM1                ICON                    "res\\number-1.ico"
+
+IDI_NUM2                ICON                    "res\\number-2.ico"
+
+IDI_NUM4                ICON                    "res\\number-4.ico"
+
+IDI_NUM8                ICON                    "res\\number-8.ico"
+
+IDI_SAVE                ICON                    "res\\save.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
