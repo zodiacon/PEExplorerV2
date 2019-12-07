@@ -85,6 +85,7 @@ BEGIN
     END
     POPUP "&Window"
     BEGIN
+        MENUITEM "&New Window",                 ID_WINDOW_NEW
         MENUITEM "&Close\tCtrl+F4",             ID_WINDOW_CLOSE
         MENUITEM "Close &All",                  ID_WINDOW_CLOSEALL
     END

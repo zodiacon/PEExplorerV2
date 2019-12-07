@@ -509,11 +509,27 @@ LRESULT CMainFrame::OnOpenInNewWindow(WORD, WORD, HWND, BOOL&) {
 	return 0;
 }
 
+LRESULT CMainFrame::OnAlwaysOnTop(WORD, WORD id, HWND, BOOL&) {
+	bool onTop = GetExStyle() & WS_EX_TOPMOST;
+	SetWindowPos(onTop ? HWND_NOTOPMOST : HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+	UISetCheck(id, !onTop);
+	return 0;
+}
+
+LRESULT CMainFrame::OnNewWindow(WORD, WORD, HWND, BOOL&) {
+	auto frame = new CMainFrame();
+	frame->CreateEx();
+	frame->ShowWindow(SW_SHOWDEFAULT);
+
+	return 0;
+}
+
 CTreeItem CMainFrame::CreateHexView(TreeNodeType type, PCWSTR title, LPARAM param) {
 	switch (type) {
 		case TreeNodeType::SectionView:
 		case TreeNodeType::DirectoryView:
 		{
+			bool sectionView = type == TreeNodeType::SectionView;
 			auto number = (int)param;
 			auto data = int(type) + number;
 			auto it = m_TreeNodes.find(data);
@@ -523,23 +539,27 @@ CTreeItem CMainFrame::CreateHexView(TreeNodeType type, PCWSTR title, LPARAM para
 			}
 
 			std::unique_ptr<IBufferManager> buffer = std::make_unique<InMemoryBuffer>();
-			if (type == TreeNodeType::SectionView) {
+			DWORD bias = 0;
+			if (sectionView) {
 				auto section = m_Parser->GetSectionHeader(number);
-				buffer->SetData(0, (const BYTE*)m_Parser->GetAddress(section->PointerToRawData), section->SizeOfRawData);
+				buffer->SetData(0, (const BYTE*)m_Parser->GetAddress(section->VirtualAddress), section->Misc.VirtualSize);			
+				bias = section->VirtualAddress;
 			}
 			else {
 				auto dir = m_Parser->GetDataDirectory(number);
 				ATLASSERT(dir);
 				buffer->SetData(0, (const BYTE*)m_Parser->GetAddress(dir->VirtualAddress), dir->Size);
+				bias = dir->VirtualAddress;
 			}
-			int image = type == TreeNodeType::SectionView ? 1 : 2;
-			auto node = m_TreeNodes[int(type == TreeNodeType::SectionView ? TreeNodeType::Sections : TreeNodeType::Directories)]
+			int image = sectionView ? 1 : 2;
+			auto node = m_TreeNodes[int(sectionView ? TreeNodeType::Sections : TreeNodeType::Directories)]
 				.InsertAfter(title, nullptr, image);
 			node.EnsureVisible();
 			node.SetData(data);
 			m_TreeNodes.insert({ data, node });
 			auto view = new CHexView(std::move(buffer), node);
 			view->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
+			view->GetHexControl().SetBiasOffset(bias);
 			m_view.AddPage(*view, title, image, IntToPtr(data));
 			return node;
 		}

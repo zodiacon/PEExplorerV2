@@ -31,7 +31,6 @@
 #define IDI_NUM2                        224
 #define IDI_NUM4                        225
 #define IDI_NUM8                        226
-#define IDI_ICON1                       227
 #define IDI_SAVE                        227
 #define ID_VIEW_TREEPANE                32774
 #define ID_OPTIONS_ALWAYSONTOP          32775
@@ -49,13 +48,14 @@
 #define ID_EDIT_FILTER                  32797
 #define ID_FILE_OPENINANEWWINDOW        32798
 #define ID_OBJECT_VIEWDATA              32799
+#define ID_WINDOW_NEWWINDOW             32802
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        228
-#define _APS_NEXT_COMMAND_VALUE         32802
+#define _APS_NEXT_COMMAND_VALUE         32803
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           102
 #endif
