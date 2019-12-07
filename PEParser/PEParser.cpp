@@ -9,20 +9,18 @@
 #pragma comment(lib, "imagehlp")
 
 PEParser::PEParser(const wchar_t* path) {
-	_address = (PBYTE)::LoadLibraryEx(path, nullptr, LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE);
-	if (_address == nullptr)
+	_module = ::LoadLibraryEx(path, nullptr, LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE);
+	if (_module == nullptr)
 		return;
 
-	_address = (PBYTE)(((ULONG_PTR)_address) & ~0xf);
+	_address = (PBYTE)(((ULONG_PTR)_module) & ~0xf);
 
 	CheckValidity();
 }
 
 PEParser::~PEParser() {
 	if (_address)
-		::FreeLibrary((HMODULE)_address);
-	if (_hMemFile)
-		::CloseHandle(_hMemFile);
+		::FreeLibrary(_module);
 }
 
 bool PEParser::IsValid() const {
@@ -66,6 +64,10 @@ const IMAGE_DATA_DIRECTORY* PEParser::GetDataDirectory(int index) const {
 	if (IsPe64())
 		return &GetOptionalHeader64().DataDirectory[index];
 	return &GetOptionalHeader32().DataDirectory[index];
+}
+
+const IMAGE_DOS_HEADER& PEParser::GetDosHeader() const {
+	return *_dosHeader;
 }
 
 CString PEParser::GetSectionName(ULONG section) const {
@@ -194,13 +196,6 @@ const IMAGE_FILE_HEADER& PEParser::GetFileHeader() const {
 void* PEParser::GetAddress(unsigned rva) const {
 	if (!IsValid())
 		return nullptr;
-
-	//auto sections = _sections;
-	//int count = GetSectionCount();
-	//for (int i = 0; i < count; ++i) {
-	//	if (rva >= sections[i].VirtualAddress && rva < sections[i].VirtualAddress + sections[i].SizeOfRawData)
-	//		return _address + sections[i].PointerToRawData + rva - sections[i].VirtualAddress;
-	//}
 
 	return _address + rva;
 

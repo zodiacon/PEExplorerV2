@@ -22,6 +22,9 @@
     <Filter Include="HexControl">
       <UniqueIdentifier>{8f0c089b-495b-4968-b122-f066cf2385ee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Structures">
+      <UniqueIdentifier>{68de5792-c44b-44f0-b112-2f15d3c67a03}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PEExplorerV2.cpp">
@@ -77,6 +80,15 @@
     </ClCompile>
     <ClCompile Include="ResourcesFrameView.cpp">
       <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageDosHeaderStruct.cpp">
+      <Filter>Structures</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageFileHeaderStruct.cpp">
+      <Filter>Structures</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageOptionalHeaderStruct.cpp">
+      <Filter>Structures</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -151,6 +163,15 @@
     </ClInclude>
     <ClInclude Include="HexControl\InMemoryBuffer.h">
       <Filter>HexControl</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageDosHeaderStruct.h">
+      <Filter>Structures</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageFileHeaderStruct.h">
+      <Filter>Structures</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageOptionalHeaderStruct.h">
+      <Filter>Structures</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -234,8 +255,17 @@
     <Image Include="res\number-8.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
+    <Image Include="res\cpu_back.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\headers.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
     <Image Include="res\save.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\structure.ico">
+      <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

@@ -163,6 +163,12 @@ IDI_NUM8                ICON                    "res\\number-8.ico"
 
 IDI_SAVE                ICON                    "res\\save.ico"
 
+IDI_ASM                 ICON                    "res\\cpu_back.ico"
+
+IDI_HEADERS             ICON                    "res\\headers.ico"
+
+IDI_STRUCT              ICON                    "res\\structure.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

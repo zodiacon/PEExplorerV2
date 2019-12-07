@@ -15,6 +15,10 @@
 #include "ResourcesFrameView.h"
 #include "HexView.h"
 #include "HexControl/InMemoryBuffer.h"
+#include "StructureView.h"
+#include "ImageDosHeaderStruct.h"
+#include "ImageFileHeaderStruct.h"
+#include "ImageOptionalHeaderStruct.h"
 
 const DWORD ListViewDefaultStyle = WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA | LVS_SHOWSELALWAYS;
 
@@ -53,6 +57,11 @@ void CMainFrame::InitTree() {
 	InsertTreeItem(L"Exports", 3, 3, TreeNodeType::Exports, root);
 	InsertTreeItem(L"Imports", 4, 4, TreeNodeType::Imports, root);
 	InsertTreeItem(L"Resources", 5, 5, TreeNodeType::Resources, root);
+	auto headers = InsertTreeItem(L"Headers", 8, 8, TreeNodeType::Headers, root);
+	InsertTreeItem(L"DOS_HEADER", 9, 9, TreeNodeType::ImageDosHeader, headers);
+	InsertTreeItem(L"FILE_HEADER", 9, 9, TreeNodeType::ImageFileHeader, headers);
+	InsertTreeItem(L"OPTIONAL_HEADER", 9, 9, TreeNodeType::ImageOptionalHeader, headers);
+	headers.Expand(TVE_EXPAND);
 
 	m_tree.Expand(root);
 	m_tree.LockWindowUpdate(FALSE);
@@ -73,6 +82,8 @@ void CMainFrame::UpdateUI() {
 }
 
 void CMainFrame::CreateNewTab(TreeNodeType type) {
+	IStructureProvider* structProvider = nullptr;
+
 	switch (type) {
 		case TreeNodeType::Summary:
 		{
@@ -130,6 +141,24 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 			break;
 		}
 
+		case TreeNodeType::ImageDosHeader:
+			structProvider = new ImageDosHeaderStruct(m_Parser.get());
+
+		case TreeNodeType::ImageFileHeader:
+			if (structProvider == nullptr)
+				structProvider = new ImageFileHeaderStruct(m_Parser.get());
+
+		case TreeNodeType::ImageOptionalHeader:
+			if (structProvider == nullptr)
+				structProvider = new ImageOptionalHeaderStruct(m_Parser.get());
+		{
+			auto view = new StructureView(m_Parser.get(), structProvider);
+			auto lv = new CGenericListView(view, true);
+			lv->Create(m_view, rcDefault, nullptr, ListViewDefaultStyle | LVS_NOSORTHEADER);
+			view->Init(*lv);
+			m_view.AddPage(*lv, structProvider->GetName(), 7, (PVOID)type);
+			break;
+		}
 	}
 }
 
@@ -347,7 +376,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	images.Create(size, size, ILC_COLOR32 | ILC_COLOR, 8, 4);
 	UINT icons[] = {
 		IDI_INFO, IDI_SECTIONS, IDI_DIRS, IDI_EXPORTS, IDI_IMPORTS, IDI_RESOURCES,
-		IDI_FILE_EXE, IDI_FILE_DLL
+		IDI_FILE_EXE, IDI_FILE_DLL, IDI_HEADERS, IDI_STRUCT
 	};
 
 	for (auto id : icons)
@@ -361,7 +390,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CImageList tabImages;
 	tabImages.Create(16, 16, ILC_COLOR32 | ILC_COLOR, 6, 4);
 	UINT tabicons[] = {
-		IDI_INFO, IDI_SECTIONS, IDI_DIRS, IDI_EXPORTS, IDI_IMPORTS, IDI_RESOURCES
+		IDI_INFO, IDI_SECTIONS, IDI_DIRS, IDI_EXPORTS, IDI_IMPORTS, IDI_RESOURCES, IDI_HEADERS, IDI_STRUCT
 	};
 	for (auto id : tabicons)
 		tabImages.AddIcon(AtlLoadIconImage(id, 64, 16, 16));
@@ -426,14 +455,6 @@ LRESULT CMainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 
 LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	CAboutDlg().DoModal();
-	return 0;
-}
-
-LRESULT CMainFrame::OnViewTreePane(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	bool bShow = (m_splitter.GetSinglePaneMode() != SPLIT_PANE_NONE);
-	m_splitter.SetSinglePaneMode(bShow ? SPLIT_PANE_NONE : SPLIT_PANE_RIGHT);
-	UISetCheck(ID_VIEW_TREEPANE, bShow);
-
 	return 0;
 }
 

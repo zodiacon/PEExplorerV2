@@ -166,6 +166,8 @@ public:
 	int GetSectionCount() const;
 	const IMAGE_SECTION_HEADER* GetSectionHeader(ULONG section) const;
 	const IMAGE_DATA_DIRECTORY* GetDataDirectory(int index) const;
+	const IMAGE_DOS_HEADER& GetDosHeader() const;
+
 	CString GetSectionName(ULONG section) const;
 
 	std::vector<ExportedSymbol> GetExports() const;
@@ -188,13 +190,14 @@ public:
 private:
 	void CheckValidity();
 	unsigned RvaToFileOffset(unsigned rva) const;
+	
 	//void ParseResourceDirectoryEntry(IMAGE_RESOURCE_DIRECTORY_ENTRY* entry, void* root, const CString& parent, IResourceCallback*) const;
 	//void ParseResourceDirectory(IMAGE_RESOURCE_DIRECTORY* dir, void* root, const CString& parent, IResourceCallback*) const;
 
 	CString GetResourceName(void* data) const;
 
-	HANDLE _hMemFile{ nullptr };
 	PBYTE _address{ nullptr };
+	HMODULE _module;
 	IMAGE_DOS_HEADER* _dosHeader;
 	IMAGE_FILE_HEADER* _fileHeader;
 	IMAGE_SECTION_HEADER* _sections;

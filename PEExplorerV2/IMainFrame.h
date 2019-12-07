@@ -8,6 +8,7 @@ enum class TreeNodeType {
 	Exports,
 	Imports,
 	Resources,
+	Headers,
 	ImportAddressTable,
 	ThreadLocalStorage,
 	LoadConfig,
@@ -15,7 +16,7 @@ enum class TreeNodeType {
 
 	ImageDosHeader = 0x100,
 	ImageFileHeader,
-	OptionalHeader,
+	ImageOptionalHeader,
 
 	SectionView = 0x200,
 

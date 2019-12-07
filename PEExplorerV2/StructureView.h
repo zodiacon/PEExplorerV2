@@ -3,15 +3,26 @@
 #include "GenericListView.h"
 #include "PEParser.h"
 
-enum class StructureType {
-	DosHeader,
-	FileHeader,
-	OptionalHeader
+struct MemberInfo {
+	CString Name;
+	unsigned Offset;
+	CString Type;
+	int Size;
+	CString Value;
+	CString Comment;
+
+	MemberInfo(PCWSTR name, unsigned offset, PCWSTR type, int size, PCWSTR value, PCWSTR comment = nullptr);
+};
+
+struct IStructureProvider {
+	virtual CString GetName() const = 0;
+	virtual int GetMemberCount() const = 0;
+	virtual const MemberInfo& GetMemberInfo(int index) const = 0;
 };
 
 class StructureView : public IGenericListViewCallback {
 public:
-	StructureView(PEParser* parser, StructureType type);
+	StructureView(PEParser* parser, IStructureProvider* provider);
 	void Init(CListViewCtrl& lv);
 
 	// IGenericListViewCallback
@@ -24,6 +35,6 @@ public:
 
 private:
 	PEParser* _parser;
-	StructureType _type;
+	std::unique_ptr<IStructureProvider> _provider;
 };
 

@@ -209,6 +209,9 @@
     <ClCompile Include="ExportsView.cpp" />
     <ClCompile Include="GenericListView.cpp" />
     <ClCompile Include="HexView.cpp" />
+    <ClCompile Include="ImageDosHeaderStruct.cpp" />
+    <ClCompile Include="ImageFileHeaderStruct.cpp" />
+    <ClCompile Include="ImageOptionalHeaderStruct.cpp" />
     <ClCompile Include="ImportsFrameView.cpp" />
     <ClCompile Include="ImportsFunctionsView.cpp" />
     <ClCompile Include="ImportsView.cpp" />
@@ -238,6 +241,9 @@
     <ClInclude Include="HexControl\IHexControl.h" />
     <ClInclude Include="HexControl\InMemoryBuffer.h" />
     <ClInclude Include="HexView.h" />
+    <ClInclude Include="ImageDosHeaderStruct.h" />
+    <ClInclude Include="ImageFileHeaderStruct.h" />
+    <ClInclude Include="ImageOptionalHeaderStruct.h" />
     <ClInclude Include="IMainFrame.h" />
     <ClInclude Include="ImportsFrameView.h" />
     <ClInclude Include="ImportsFunctionsView.h" />
@@ -261,6 +267,7 @@
     <Image Include="res\assembly.ico" />
     <Image Include="res\close.ico" />
     <Image Include="res\copy.ico" />
+    <Image Include="res\cpu_back.ico" />
     <Image Include="res\database-export.ico" />
     <Image Include="res\database-import.ico" />
     <Image Include="res\dependencies.ico" />
@@ -269,6 +276,7 @@
     <Image Include="res\file_exe.ico" />
     <Image Include="res\folder.ico" />
     <Image Include="res\folder_open.ico" />
+    <Image Include="res\headers.ico" />
     <Image Include="res\info.ico" />
     <Image Include="res\library-friend.ico" />
     <Image Include="res\library-import.ico" />
@@ -284,6 +292,7 @@
     <Image Include="res\pin_blue.ico" />
     <Image Include="res\resources.ico" />
     <Image Include="res\save.ico" />
+    <Image Include="res\structure.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
