@@ -34,8 +34,9 @@
 #define IDI_SAVE                        227
 #define IDI_ASM                         228
 #define IDI_HEADERS                     229
-#define IDI_ICON3                       230
 #define IDI_STRUCT                      230
+#define IDI_ICON1                       231
+#define IDI_VIEW                        231
 #define ID_VIEW_TREEPANE                32774
 #define ID_OPTIONS_ALWAYSONTOP          32775
 #define ID_FILE_CLOSE32776              32776
@@ -58,7 +59,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        231
+#define _APS_NEXT_RESOURCE_VALUE        232
 #define _APS_NEXT_COMMAND_VALUE         32803
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           102

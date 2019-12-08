@@ -60,3 +60,4 @@ void DataDirectoriesView::OnContextMenu(const POINT& pt, int index) {
 		_frame->CreateHexView(TreeNodeType::DirectoryView, _dirs[index].Name, index);
 	}
 }
+

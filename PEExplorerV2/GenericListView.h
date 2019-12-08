@@ -13,6 +13,10 @@ struct IGenericListViewCallback {
 		return true;
 	}
 	virtual void OnContextMenu(const POINT& pt, int selected) {}
+	virtual void ExecuteCommand(WORD id) {}
+	virtual bool CanExecuteCommand(WORD id) {
+		return true;
+	}
 };
 
 class CGenericListView :
@@ -28,7 +32,11 @@ public:
 		REFLECTED_NOTIFY_CODE_HANDLER(LVN_GETDISPINFO, OnGetDispInfo)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, OnContextMenu)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
+		MESSAGE_HANDLER(WM_FORWARDMSG, OnForwardMsg)
 		CHAIN_MSG_MAP_ALT(CVirtualListView<CGenericListView>, 1)
+
+	ALT_MSG_MAP(1)
+		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
 	END_MSG_MAP()
 
 	void DoSort(const SortInfo* si);
@@ -40,6 +48,8 @@ private:
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnGetDispInfo(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
 	IGenericListViewCallback* m_Callback;

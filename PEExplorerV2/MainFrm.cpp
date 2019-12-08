@@ -321,6 +321,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		{ ID_VIEW_RESOURCES, IDI_RESOURCES },
 		{ ID_VIEW_SECTIONS, IDI_SECTIONS },
 		{ ID_VIEW_DIRECTORIES, IDI_DIRS },
+		{ ID_OBJECT_VIEWDATA, IDI_VIEW },
 	};
 	for (auto& cmd : cmds)
 		m_CmdBar.AddIcon(AtlLoadIcon(cmd.icon), cmd.id);
@@ -328,7 +329,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CToolBarCtrl tb;
 	auto hWndToolBar = tb.Create(m_hWnd, nullptr, nullptr, ATL_SIMPLE_TOOLBAR_PANE_STYLE, 0, ATL_IDW_TOOLBAR);
 	CImageList tbImages;
-	tbImages.Create(24, 24, ILC_COLOR32 | ILC_COLOR, 8, 4);
+	tbImages.Create(24, 24, ILC_COLOR32, 8, 4);
 	tb.SetImageList(tbImages);
 
 	struct {
@@ -337,6 +338,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		int style = BTNS_BUTTON;
 	} buttons[] = {
 		{ ID_FILE_OPEN, IDI_OPEN },
+		{ 0 },
+		{ ID_EDIT_COPY, IDI_COPY },
 		{ 0 },
 		{ ID_VIEW_SUMMARY, IDI_INFO, 0 },
 		{ ID_VIEW_SECTIONS, IDI_SECTIONS, 0 },
@@ -365,7 +368,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	m_hWndClient = m_splitter.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 
 	m_tree.Create(m_splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | TVS_HASLINES |
-		TVS_LINESATROOT | TVS_HASBUTTONS | TVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE);
+		TVS_LINESATROOT | TVS_HASBUTTONS | TVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE, IDC_TREE);
 	m_view.Create(m_splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
 
 	CMenuHandle menuMain = m_CmdBar.GetMenu();
@@ -373,7 +376,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	int size = 24;
 	CImageList images;
-	images.Create(size, size, ILC_COLOR32 | ILC_COLOR, 8, 4);
+	images.Create(size, size, ILC_COLOR32, 8, 4);
 	UINT icons[] = {
 		IDI_INFO, IDI_SECTIONS, IDI_DIRS, IDI_EXPORTS, IDI_IMPORTS, IDI_RESOURCES,
 		IDI_FILE_EXE, IDI_FILE_DLL, IDI_HEADERS, IDI_STRUCT
@@ -388,7 +391,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	m_splitter.SetSplitterPos(250);
 
 	CImageList tabImages;
-	tabImages.Create(16, 16, ILC_COLOR32 | ILC_COLOR, 6, 4);
+	tabImages.Create(16, 16, ILC_COLOR32, 6, 4);
 	UINT tabicons[] = {
 		IDI_INFO, IDI_SECTIONS, IDI_DIRS, IDI_EXPORTS, IDI_IMPORTS, IDI_RESOURCES, IDI_HEADERS, IDI_STRUCT
 	};
@@ -515,7 +518,7 @@ LRESULT CMainFrame::OnWindowActivate(WORD, WORD id, HWND, BOOL&) {
 LRESULT CMainFrame::OnRecentFile(WORD, WORD id, HWND, BOOL&) {
 	int index = id - ID_FILE_RECENTFILES;
 	auto path = m_RecentFiles[index];
-	if (path == m_FilePath)
+	if (path == m_FilePath && m_Parser != nullptr)
 		return 0;
 
 	DoFileOpen(path);

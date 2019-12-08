@@ -12,8 +12,7 @@ class CMainFrame :
 	public CFrameWindowImpl<CMainFrame>, 
 	public CUpdateUI<CMainFrame>,
 	public CMessageFilter, public CIdleHandler,
-	public IMainFrame
-{
+	public IMainFrame {
 public:
 	CMainFrame();
 
@@ -22,6 +21,8 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual BOOL OnIdle();
 	void OnFinalMessage(HWND);
+
+	enum { IDC_TREE = 200 };
 
 	BEGIN_UPDATE_UI_MAP(CMainFrame)
 		UPDATE_ELEMENT(ID_VIEW_TOOLBAR, UPDUI_MENUPOPUP)
@@ -33,6 +34,7 @@ public:
 		UPDATE_ELEMENT(ID_VIEW_SECTIONS, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
 		UPDATE_ELEMENT(ID_VIEW_DIRECTORIES, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
 		UPDATE_ELEMENT(ID_OPTIONS_ALWAYSONTOP, UPDUI_MENUPOPUP)
+		UPDATE_ELEMENT(ID_OBJECT_VIEWDATA, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
 	END_UPDATE_UI_MAP()
 	 
 	BEGIN_MSG_MAP(CMainFrame)
@@ -53,7 +55,7 @@ public:
 		COMMAND_RANGE_HANDLER(ID_WINDOW_TABFIRST, ID_WINDOW_TABLAST, OnWindowActivate)
 		COMMAND_RANGE_HANDLER(ID_FILE_RECENTFILES, ID_FILE_RECENTFILES + 9, OnRecentFile)
 		MESSAGE_HANDLER(WM_DROPFILES, OnDropFiles)
-		NOTIFY_CODE_HANDLER(NM_DBLCLK, OnTreeItemDoubleClick)
+		NOTIFY_HANDLER(IDC_TREE, NM_DBLCLK, OnTreeItemDoubleClick)
 		CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
 		REFLECT_NOTIFICATIONS()
@@ -65,7 +67,6 @@ public:
 //	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
 
 private:
-
 	void InitTree();
 	void UpdateUI();
 	void CreateNewTab(TreeNodeType type);

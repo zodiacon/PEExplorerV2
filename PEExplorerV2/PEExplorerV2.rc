@@ -78,6 +78,8 @@ BEGIN
         MENUITEM "&Exports",                    ID_VIEW_EXPORTS
         MENUITEM "&Imports",                    ID_VIEW_IMPORTS
         MENUITEM "&Resources",                  ID_VIEW_RESOURCES
+        MENUITEM SEPARATOR
+        MENUITEM "Data",                        ID_OBJECT_VIEWDATA
     END
     POPUP "&Options"
     BEGIN
@@ -168,6 +170,8 @@ IDI_ASM                 ICON                    "res\\cpu_back.ico"
 IDI_HEADERS             ICON                    "res\\headers.ico"
 
 IDI_STRUCT              ICON                    "res\\structure.ico"
+
+IDI_VIEW                ICON                    "res\\zoom.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

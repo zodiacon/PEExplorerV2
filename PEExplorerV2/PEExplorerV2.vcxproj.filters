@@ -90,6 +90,9 @@
     <ClCompile Include="ImageOptionalHeaderStruct.cpp">
       <Filter>Structures</Filter>
     </ClCompile>
+    <ClCompile Include="ClipboardHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainFrm.h">
@@ -172,6 +175,9 @@
     </ClInclude>
     <ClInclude Include="ImageOptionalHeaderStruct.h">
       <Filter>Structures</Filter>
+    </ClInclude>
+    <ClInclude Include="ClipboardHelper.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -265,6 +271,9 @@
       <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\structure.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\zoom.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>

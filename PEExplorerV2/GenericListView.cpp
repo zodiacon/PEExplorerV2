@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "GenericListView.h"
+#include "ClipboardHelper.h"
 
 CGenericListView::CGenericListView(IGenericListViewCallback* cb, bool autoDelete) {
 	ATLASSERT(cb);
@@ -65,3 +66,40 @@ LRESULT CGenericListView::OnContextMenu(UINT, WPARAM, LPARAM lParam, BOOL&) {
 
 	return 0;
 }
+
+LRESULT CGenericListView::OnForwardMsg(UINT, WPARAM, LPARAM lParam, BOOL& handled) {
+	auto msg = reinterpret_cast<MSG*>(lParam);
+	LRESULT result = 0;
+	handled = ProcessWindowMessage(*this, msg->message, msg->wParam, msg->lParam, result, 1);
+
+	return result;
+}
+
+LRESULT CGenericListView::OnEditCopy(WORD, WORD, HWND, BOOL&) {
+	CString text;
+	int i = -1;
+	LVCOLUMN col;
+	col.mask = LVCF_FMT;
+	int max = 0;
+	for (;; max++)
+		if (!GetColumn(max, &col))
+			break;
+
+	while (true) {
+		i = GetNextItem(i, LVNI_SELECTED);
+		if (i < 0)
+			break;
+
+		for (int c = 0; c < max; c++) {
+			CString item;
+			if (!GetItemText(i, c, item))
+				break;
+			text += item + L"\t";
+		}
+		text += L"\n";
+	}
+	if (!text.IsEmpty())
+		ClipboardHelper::CopyText(*this, text);
+	return 0;
+}
+
