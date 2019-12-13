@@ -5,8 +5,8 @@
 #include "SortHelper.h"
 #include "resource.h"
 
-ExportsView::ExportsView(PEParser* parser) {
-	_parser = parser;
+ExportsView::ExportsView(PEParser* parser, IMainFrame* frame) 
+	: _parser(parser), _frame(frame) {
 }
 
 void ExportsView::Init(CListViewCtrl& lv) {
@@ -19,7 +19,7 @@ void ExportsView::Init(CListViewCtrl& lv) {
 	images.Create(16, 16, ILC_COLOR32 | ILC_COLOR, 2, 0);
 	images.AddIcon(AtlLoadIconImage(IDI_EXPORT, 0, 16, 16));
 	images.AddIcon(AtlLoadIconImage(IDI_FORWARD, 0, 16, 16));
-	lv.SetImageList(images.Detach(), LVSIL_SMALL);
+	lv.SetImageList(images, LVSIL_SMALL);
 }
 
 int ExportsView::GetItemCount() {
@@ -52,6 +52,15 @@ bool ExportsView::Sort(int column, bool ascending) {
 
 int ExportsView::GetIcon(int row) {
 	return _exports[row].ForwardName.empty() ? 0 : 1;
+}
+
+void ExportsView::OnContextMenu(const POINT& pt, int selected) {
+	CMenuHandle menu;
+	menu.LoadMenuW(IDR_CONTEXT);
+	auto cmd = _frame->ShowContextMenu(menu.GetSubMenu(1), pt, TPM_RETURNCMD);
+	if (cmd == ID_OBJECT_VIEWDATA) {
+		_frame->CreateAssemblyView(_exports[selected]);
+	}
 }
 
 bool ExportsView::CompareItems(const ExportedSymbol& e1, const ExportedSymbol& e2, int col, bool asc) {

@@ -75,9 +75,6 @@
     <ClCompile Include="StructureView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
-    <ClCompile Include="HexView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ResourcesFrameView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
@@ -92,6 +89,12 @@
     </ClCompile>
     <ClCompile Include="ClipboardHelper.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AssemblyView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="HexView.cpp">
+      <Filter>Views</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -149,9 +152,6 @@
     <ClInclude Include="ResourcesFrameView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HexView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="IMainFrame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -178,6 +178,12 @@
     </ClInclude>
     <ClInclude Include="ClipboardHelper.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssemblyView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="HexView.h">
+      <Filter>Views</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

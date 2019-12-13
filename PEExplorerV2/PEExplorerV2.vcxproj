@@ -122,6 +122,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <ExceptionHandling>Async</ExceptionHandling>
       <AdditionalIncludeDirectories>..\PEParser</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -205,6 +206,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
+    <ClCompile Include="AssemblyView.cpp" />
     <ClCompile Include="ClipboardHelper.cpp" />
     <ClCompile Include="DataDirectoriesView.cpp" />
     <ClCompile Include="ExportsView.cpp" />
@@ -234,6 +236,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />
+    <ClInclude Include="AssemblyView.h" />
     <ClInclude Include="ClipboardHelper.h" />
     <ClInclude Include="DataDirectoriesView.h" />
     <ClInclude Include="ExportsView.h" />

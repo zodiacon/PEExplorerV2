@@ -2,6 +2,7 @@
 
 #include "PEParser.h"
 #include <atltime.h>
+#include "Capstone/capstone.h"
 
 struct PEStrings abstract final {
 	static PCWSTR SubsystemTypeToString(SubsystemType type);
@@ -16,5 +17,6 @@ struct PEStrings abstract final {
 	static CString ToHex(ULONGLONG value);
 	static CString ToMemorySize(ULONGLONG size);
 	static PCWSTR ResourceTypeToString(WORD id);
+	static CString FormatInstruction(cs_insn& inst);
 };
 

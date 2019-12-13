@@ -19,6 +19,10 @@
 #include "ImageDosHeaderStruct.h"
 #include "ImageFileHeaderStruct.h"
 #include "ImageOptionalHeaderStruct.h"
+#include "Capstone/capstone.h"
+#include "AssemblyView.h"
+
+#pragma comment(lib, "capstone/capstone.lib")
 
 const DWORD ListViewDefaultStyle = WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA | LVS_SHOWSELALWAYS;
 
@@ -97,7 +101,7 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 
 		case TreeNodeType::Exports:
 		{
-			auto view = new ExportsView(m_Parser.get());
+			auto view = new ExportsView(m_Parser.get(), this);
 			auto lv = new CGenericListView(view, true);
 			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
 			view->Init(*lv);
@@ -376,10 +380,10 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	int size = 24;
 	CImageList images;
-	images.Create(size, size, ILC_COLOR32, 8, 4);
+	images.Create(size, size, ILC_COLOR32, 10, 4);
 	UINT icons[] = {
 		IDI_INFO, IDI_SECTIONS, IDI_DIRS, IDI_EXPORTS, IDI_IMPORTS, IDI_RESOURCES,
-		IDI_FILE_EXE, IDI_FILE_DLL, IDI_HEADERS, IDI_STRUCT
+		IDI_FILE_EXE, IDI_FILE_DLL, IDI_HEADERS, IDI_STRUCT, IDI_EXPORT
 	};
 
 	for (auto id : icons)
@@ -393,7 +397,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CImageList tabImages;
 	tabImages.Create(16, 16, ILC_COLOR32, 6, 4);
 	UINT tabicons[] = {
-		IDI_INFO, IDI_SECTIONS, IDI_DIRS, IDI_EXPORTS, IDI_IMPORTS, IDI_RESOURCES, IDI_HEADERS, IDI_STRUCT
+		IDI_INFO, IDI_SECTIONS, IDI_DIRS, IDI_EXPORTS, IDI_IMPORTS, IDI_RESOURCES, IDI_HEADERS, IDI_STRUCT,
+		IDI_EXPORT
 	};
 	for (auto id : tabicons)
 		tabImages.AddIcon(AtlLoadIconImage(id, 64, 16, 16));
@@ -546,6 +551,29 @@ LRESULT CMainFrame::OnNewWindow(WORD, WORD, HWND, BOOL&) {
 	frame->ShowWindow(SW_SHOWDEFAULT);
 
 	return 0;
+}
+
+CTreeItem CMainFrame::CreateAssemblyView(const ExportedSymbol& sym) {
+	CTreeItem node;
+	csh handle;
+	cs_insn* insn;
+	if (cs_open(CS_ARCH_X86, m_Parser->IsPe64() ? CS_MODE_64 : CS_MODE_32, &handle) != CS_ERR_OK)
+		return node;
+	auto address = (const uint8_t*)m_Parser->GetAddress(sym.Address);
+	auto count = cs_disasm(handle, address, 0x600, m_Parser->GetOptionalHeader64().ImageBase + sym.Address, 0, &insn);
+	if (count > 0) {
+		node = m_TreeNodes[int(TreeNodeType::Exports)].InsertAfter(CString(sym.Name.c_str()), nullptr, 10);
+		auto view = new CAssemblyView(node, insn, static_cast<int>(count));
+		view->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+		auto data = (int)TreeNodeType::ExportView + sym.Ordinal;
+		m_view.AddPage(*view, CString(sym.Name.c_str()), 8, IntToPtr(data));
+		node.EnsureVisible();
+		node.SetData(data);
+		m_TreeNodes.insert({ data, node });
+	}
+
+	cs_close(&handle);
+	return node;
 }
 
 CTreeItem CMainFrame::CreateHexView(TreeNodeType type, PCWSTR title, LPARAM param) {

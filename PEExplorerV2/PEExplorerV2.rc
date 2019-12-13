@@ -78,8 +78,6 @@ BEGIN
         MENUITEM "&Exports",                    ID_VIEW_EXPORTS
         MENUITEM "&Imports",                    ID_VIEW_IMPORTS
         MENUITEM "&Resources",                  ID_VIEW_RESOURCES
-        MENUITEM SEPARATOR
-        MENUITEM "Data",                        ID_OBJECT_VIEWDATA
     END
     POPUP "&Options"
     BEGIN
@@ -103,7 +101,12 @@ BEGIN
     BEGIN
         MENUITEM "View Data",                   ID_OBJECT_VIEWDATA
     END
-END
+    
+    POPUP "exports"
+    BEGIN
+        MENUITEM "View Assembly",               ID_OBJECT_VIEWDATA
+    END
+    END
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -291,45 +294,25 @@ END
 STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "PE Explorer v2.0 (C)2019 Pavel Yosifovich"
-END
-
-STRINGTABLE
-BEGIN
     ID_FILE_NEW             "Create a new document\nNew"
     ID_FILE_OPEN            "Open an existing document\nOpen"
     ID_FILE_CLOSE           "Close the active document\nClose"
     ID_FILE_SAVE            "Save the active document\nSave"
     ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
-    ID_FILE_PAGE_SETUP      "Change the printing options\nPage Setup"
-    ID_FILE_PRINT_SETUP     "Change the printer and printing options\nPrint Setup"
-    ID_FILE_PRINT           "Print the active document\nPrint"
-    ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
-END
-
-STRINGTABLE
-BEGIN
     ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
-    ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
+    ID_APP_EXIT             "Quit the application\nExit"
 END
 
 STRINGTABLE
 BEGIN
     ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
     ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
-END
-
-STRINGTABLE
-BEGIN
     ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
     ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window\nArrange Icons"
     ID_WINDOW_CASCADE       "Arrange windows so they overlap\nCascade Windows"
     ID_WINDOW_TILE_HORZ     "Arrange windows as non-overlapping tiles\nTile Windows"
     ID_WINDOW_TILE_VERT     "Arrange windows as non-overlapping tiles\nTile Windows"
     ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
-END
-
-STRINGTABLE
-BEGIN
     ID_EDIT_CLEAR           "Erase the selection\nErase"
     ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
     ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
@@ -358,23 +341,21 @@ BEGIN
     ATL_IDS_SCNEXTWINDOW    "Switch to the next document window"
     ATL_IDS_SCPREVWINDOW    "Switch to the previous document window"
     ATL_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
-END
-
-STRINGTABLE
-BEGIN
     ATL_IDS_SCRESTORE       "Restore the window to normal size"
     ATL_IDS_SCTASKLIST      "Activate Task List"
-    ATL_IDS_MDICHILD        "Activate this window"
-END
-
-STRINGTABLE
-BEGIN
     ATL_IDS_IDLEMESSAGE     "Ready"
+    ATL_IDS_MDICHILD        "Activate this window"
+    ATL_IDS_MRU_FILE        "Open this document"
 END
 
 STRINGTABLE
 BEGIN
-    ATL_IDS_MRU_FILE        "Open this document"
+    ID_VIEW_DIRECTORIES     "View data directories\nData Directories"
+    ID_VIEW_RESOURCES       "View resources\nResources"
+    ID_VIEW_EXPORTS       "View exports\nExports"
+    ID_VIEW_IMPORTS       "View imports\nImports"
+    ID_VIEW_SECTIONS       "View sections\nSections"
+    ID_VIEW_SUMMARY       "View summary\nSummary"
 END
 
 #endif    // English (United States) resources

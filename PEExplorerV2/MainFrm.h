@@ -84,6 +84,7 @@ private:
 	// IMainFrame
 	UINT ShowContextMenu(HMENU menu, const POINT& pt, DWORD flags) override;
 	CTreeItem CreateHexView(TreeNodeType type, PCWSTR title, LPARAM param) override;
+	CTreeItem CreateAssemblyView(const ExportedSymbol& symbol) override;
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
@@ -114,5 +115,6 @@ private:
 	CString m_FileName, m_FilePath;
 	std::unordered_map<int, CTreeItem> m_TreeNodes;
 	static int m_TotalFrames;
+
 };
 
