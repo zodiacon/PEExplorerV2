@@ -150,11 +150,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h" />
+    <ClInclude Include="CLRMetadataParser.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PEParser.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CLRMetadataParser.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

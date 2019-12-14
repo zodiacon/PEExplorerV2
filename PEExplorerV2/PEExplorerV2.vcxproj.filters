@@ -96,6 +96,9 @@
     <ClCompile Include="HexView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="ManagedTypesView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainFrm.h">
@@ -183,6 +186,9 @@
       <Filter>Views</Filter>
     </ClInclude>
     <ClInclude Include="HexView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ManagedTypesView.h">
       <Filter>Views</Filter>
     </ClInclude>
   </ItemGroup>
@@ -280,6 +286,27 @@
       <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\zoom.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\component.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\Managed\attribute.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\Managed\class.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\Managed\delegate.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\Managed\enum.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\Managed\event.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\Managed\interface.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>

@@ -18,5 +18,6 @@ struct PEStrings abstract final {
 	static CString ToMemorySize(ULONGLONG size);
 	static PCWSTR ResourceTypeToString(WORD id);
 	static CString FormatInstruction(cs_insn& inst);
+	static CString ManagedTypeAttributesToString(CorTypeAttr attr);
 };
 

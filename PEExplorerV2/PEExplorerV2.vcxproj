@@ -219,6 +219,7 @@
     <ClCompile Include="ImportsFunctionsView.cpp" />
     <ClCompile Include="ImportsView.cpp" />
     <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="ManagedTypesView.cpp" />
     <ClCompile Include="PEExplorerV2.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -254,6 +255,7 @@
     <ClInclude Include="ImportsFunctionsView.h" />
     <ClInclude Include="ImportsView.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="ManagedTypesView.h" />
     <ClInclude Include="PEStrings.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
@@ -271,6 +273,7 @@
   <ItemGroup>
     <Image Include="res\assembly.ico" />
     <Image Include="res\close.ico" />
+    <Image Include="res\component.ico" />
     <Image Include="res\copy.ico" />
     <Image Include="res\cpu_back.ico" />
     <Image Include="res\database-export.ico" />
@@ -285,6 +288,12 @@
     <Image Include="res\info.ico" />
     <Image Include="res\library-friend.ico" />
     <Image Include="res\library-import.ico" />
+    <Image Include="res\Managed\attribute.ico" />
+    <Image Include="res\Managed\class.ico" />
+    <Image Include="res\Managed\delegate.ico" />
+    <Image Include="res\Managed\enum.ico" />
+    <Image Include="res\Managed\event.ico" />
+    <Image Include="res\Managed\interface.ico" />
     <Image Include="res\method-export.ico" />
     <Image Include="res\method-friend.ico" />
     <Image Include="res\method-import.ico" />

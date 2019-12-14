@@ -37,30 +37,38 @@
 #define IDI_STRUCT                      230
 #define IDI_ICON1                       231
 #define IDI_VIEW                        231
+#define IDI_ICON2                       232
+#define IDI_COMPONENT                   232
+#define IDI_CLASS                       233
+#define IDI_DELEGATE                    234
+#define IDI_ENUM                        235
+#define IDI_EVENT                       236
+#define IDI_INTERFACE                   237
+#define IDI_ICON3                       238
+#define IDI_ATTRIBUTE                   238
 #define ID_VIEW_TREEPANE                32774
 #define ID_OPTIONS_ALWAYSONTOP          32775
-#define ID_FILE_CLOSE32776              32776
 #define ID_VIEW_SUMMARY                 32777
 #define ID_VIEW_SECTIONS                32778
 #define ID_VIEW_DIRECTORIES             32779
 #define ID_VIEW_EXPORTS                 32780
 #define ID_VIEW_IMPORTS                 32781
 #define ID_VIEW_RESOURCES               32782
-#define ID_WINDOW_CLOSE                 32783
-#define ID_WINDOW_CLOSEALL              32784
-#define ID_FILE_RECENTFILES             32785
-#define ID_EDIT_FIND32796               32796
-#define ID_EDIT_FILTER                  32797
-#define ID_FILE_OPENINANEWWINDOW        32798
-#define ID_OBJECT_VIEWDATA              32799
-#define ID_WINDOW_NEWWINDOW             32802
+#define ID_VIEW_DOTNET                  32783
+#define ID_WINDOW_CLOSE                 32784
+#define ID_WINDOW_CLOSEALL              32785
+#define ID_FILE_RECENTFILES             32786
+#define ID_EDIT_FILTER                  32800
+#define ID_FILE_OPENINANEWWINDOW        32801
+#define ID_OBJECT_VIEWDATA              32802
+#define ID_WINDOW_NEWWINDOW             32803
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        232
-#define _APS_NEXT_COMMAND_VALUE         32803
+#define _APS_NEXT_RESOURCE_VALUE        239
+#define _APS_NEXT_COMMAND_VALUE         32804
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           102
 #endif

@@ -10,6 +10,7 @@ enum class TreeNodeType {
 	Exports,
 	Imports,
 	Resources,
+	DotNet,
 	Headers,
 	ImportAddressTable,
 	ThreadLocalStorage,

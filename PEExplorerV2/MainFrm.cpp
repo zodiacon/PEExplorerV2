@@ -21,6 +21,7 @@
 #include "ImageOptionalHeaderStruct.h"
 #include "Capstone/capstone.h"
 #include "AssemblyView.h"
+#include "ManagedTypesView.h"
 
 #pragma comment(lib, "capstone/capstone.lib")
 
@@ -58,9 +59,12 @@ void CMainFrame::InitTree() {
 	InsertTreeItem(L"Summary", 0, 0, TreeNodeType::Summary, root);
 	InsertTreeItem(L"Sections", 1, 1, TreeNodeType::Sections, root);
 	InsertTreeItem(L"Directories", 2, 2, TreeNodeType::Directories, root);
-	InsertTreeItem(L"Exports", 3, 3, TreeNodeType::Exports, root);
+	if(m_Parser->HasExports())
+		InsertTreeItem(L"Exports", 3, 3, TreeNodeType::Exports, root);
 	InsertTreeItem(L"Imports", 4, 4, TreeNodeType::Imports, root);
 	InsertTreeItem(L"Resources", 5, 5, TreeNodeType::Resources, root);
+	if(m_Parser->IsManaged())
+		InsertTreeItem(L".NET (CLR)", 11, 11, TreeNodeType::DotNet, root);
 	auto headers = InsertTreeItem(L"Headers", 8, 8, TreeNodeType::Headers, root);
 	InsertTreeItem(L"DOS_HEADER", 9, 9, TreeNodeType::ImageDosHeader, headers);
 	InsertTreeItem(L"FILE_HEADER", 9, 9, TreeNodeType::ImageFileHeader, headers);
@@ -79,10 +83,11 @@ void CMainFrame::UpdateUI() {
 
 	UIEnable(ID_VIEW_SUMMARY, fileOpen);
 	UIEnable(ID_VIEW_SECTIONS, fileOpen);
-	UIEnable(ID_VIEW_EXPORTS, fileOpen);
+	UIEnable(ID_VIEW_EXPORTS, fileOpen && m_Parser->HasExports());
 	UIEnable(ID_VIEW_IMPORTS, fileOpen);
 	UIEnable(ID_VIEW_RESOURCES, fileOpen);
 	UIEnable(ID_VIEW_DIRECTORIES, fileOpen);
+	UIEnable(ID_VIEW_DOTNET, fileOpen && m_Parser->IsManaged());
 }
 
 void CMainFrame::CreateNewTab(TreeNodeType type) {
@@ -142,6 +147,16 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 			auto view = new CResourcesFrameView(m_Parser.get());
 			view->Create(m_view, nullptr, nullptr, WS_CHILD | WS_VISIBLE);
 			m_view.AddPage(*view, L"Resources", 5, (PVOID)type);
+			break;
+		}
+
+		case TreeNodeType::DotNet:
+		{
+			auto view = new ManagedTypesView(m_Parser.get());
+			auto lv = new CGenericListView(view);
+			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
+			view->Init(*lv);
+			m_view.AddPage(*lv, L".NET (CLR)", 9, (PVOID)type);
 			break;
 		}
 
@@ -325,6 +340,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		{ ID_VIEW_RESOURCES, IDI_RESOURCES },
 		{ ID_VIEW_SECTIONS, IDI_SECTIONS },
 		{ ID_VIEW_DIRECTORIES, IDI_DIRS },
+		{ ID_VIEW_DOTNET, IDI_COMPONENT },
 		{ ID_OBJECT_VIEWDATA, IDI_VIEW },
 	};
 	for (auto& cmd : cmds)
@@ -351,6 +367,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		{ ID_VIEW_EXPORTS, IDI_EXPORTS, 0 },
 		{ ID_VIEW_IMPORTS, IDI_IMPORTS, 0 },
 		{ ID_VIEW_RESOURCES, IDI_RESOURCES, 0 },
+		{ ID_VIEW_DOTNET, IDI_COMPONENT, 0 },
 	};
 	for (auto& b : buttons) {
 		if (b.id == 0)
@@ -383,7 +400,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	images.Create(size, size, ILC_COLOR32, 10, 4);
 	UINT icons[] = {
 		IDI_INFO, IDI_SECTIONS, IDI_DIRS, IDI_EXPORTS, IDI_IMPORTS, IDI_RESOURCES,
-		IDI_FILE_EXE, IDI_FILE_DLL, IDI_HEADERS, IDI_STRUCT, IDI_EXPORT
+		IDI_FILE_EXE, IDI_FILE_DLL, IDI_HEADERS, IDI_STRUCT, IDI_EXPORT, IDI_COMPONENT
 	};
 
 	for (auto id : icons)
@@ -395,10 +412,10 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	m_splitter.SetSplitterPos(250);
 
 	CImageList tabImages;
-	tabImages.Create(16, 16, ILC_COLOR32, 6, 4);
+	tabImages.Create(16, 16, ILC_COLOR32, 10, 4);
 	UINT tabicons[] = {
 		IDI_INFO, IDI_SECTIONS, IDI_DIRS, IDI_EXPORTS, IDI_IMPORTS, IDI_RESOURCES, IDI_HEADERS, IDI_STRUCT,
-		IDI_EXPORT
+		IDI_EXPORT, IDI_COMPONENT
 	};
 	for (auto id : tabicons)
 		tabImages.AddIcon(AtlLoadIconImage(id, 64, 16, 16));

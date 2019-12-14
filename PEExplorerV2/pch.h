@@ -25,6 +25,7 @@ extern CAppModule _Module;
 #include <atlctrlx.h>
 #include <atlsplit.h>
 #include <ImageHlp.h>
+#include <cor.h>
 #include <vector>
 #include <string>
 #include <memory>

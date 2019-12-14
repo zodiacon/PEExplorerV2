@@ -2,9 +2,8 @@
 //
 
 #include "pch.h"
-#include "framework.h"
 #include "PEParser.h"
-#include <ImageHlp.h>
+#include "CLRMetadataParser.h"
 
 #pragma comment(lib, "imagehlp")
 
@@ -16,6 +15,14 @@ PEParser::PEParser(const wchar_t* path) {
 	_address = (PBYTE)(((ULONG_PTR)_module) & ~0xf);
 
 	CheckValidity();
+	if (IsValid() && IsManaged()) {
+		CComPtr<IMetaDataDispenser> spDispenser;
+		auto hr = ::CoCreateInstance(CLSID_CorMetaDataDispenser, nullptr, CLSCTX_ALL, 
+			IID_IMetaDataDispenser, reinterpret_cast<void**>(&spDispenser));
+		if (SUCCEEDED(hr)) {
+			spDispenser->OpenScope(path, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&_spMetadata));
+		}
+	}
 }
 
 PEParser::~PEParser() {
@@ -40,6 +47,10 @@ bool PEParser::IsExecutable() const {
 
 bool PEParser::IsManaged() const {
 	return GetDataDirectory(IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR)->Size != 0;
+}
+
+bool PEParser::HasExports() const {
+	return GetDataDirectory(IMAGE_DIRECTORY_ENTRY_EXPORT)->VirtualAddress != 0;
 }
 
 int PEParser::GetSectionCount() const {
@@ -203,6 +214,22 @@ void* PEParser::GetAddress(unsigned rva) const {
 
 SubsystemType PEParser::GetSubsystemType() const {
 	return static_cast<SubsystemType>(IsPe64() ? GetOptionalHeader64().Subsystem : GetOptionalHeader32().Subsystem);
+}
+
+IMAGE_COR20_HEADER* PEParser::GetCLRHeader() const {
+	auto dir = GetDataDirectory(IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR);
+	if(dir->VirtualAddress == 0 || dir->Size == 0)
+		return nullptr;
+
+	auto header = static_cast<IMAGE_COR20_HEADER*>(GetAddress(dir->VirtualAddress));
+	return header;
+}
+
+std::unique_ptr<CLRMetadataParser> PEParser::GetCLRParser() {
+	if (!IsManaged())
+		return nullptr;
+
+	return std::make_unique<CLRMetadataParser>(_spMetadata);
 }
 
 void PEParser::CheckValidity() {

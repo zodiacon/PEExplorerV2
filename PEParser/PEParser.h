@@ -3,6 +3,9 @@
 #include <string>
 #include <vector>
 #include <atlstr.h>
+#include <cor.h>
+
+class CLRMetadataParser;
 
 struct ExportedSymbol {
 	std::string Name;
@@ -153,6 +156,25 @@ struct ResourceType {
 	bool IsId{ false };
 };
 
+enum class ManagedTypeKind {
+	Attribute,
+	Class,
+	Delegate,
+	Enum,
+	Interface,
+	Struct,
+	Count
+};
+
+struct ManagedType {
+	CString Name;
+	CorTypeAttr Attributes;
+	mdTypeDef Token;
+	mdToken BaseTypeToken;
+	CString BaseTypeName;
+	ManagedTypeKind Kind;
+};
+
 class PEParser final {
 public:
 	explicit PEParser(const wchar_t* path);
@@ -162,6 +184,7 @@ public:
 	bool IsPe64() const;
 	bool IsExecutable() const;
 	bool IsManaged() const;
+	bool HasExports() const;
 
 	int GetSectionCount() const;
 	const IMAGE_SECTION_HEADER* GetSectionHeader(ULONG section) const;
@@ -187,6 +210,9 @@ public:
 		return *_opt64;
 	}
 
+	IMAGE_COR20_HEADER* GetCLRHeader() const;
+	std::unique_ptr<CLRMetadataParser> GetCLRParser();
+
 private:
 	void CheckValidity();
 	unsigned RvaToFileOffset(unsigned rva) const;
@@ -203,5 +229,6 @@ private:
 	IMAGE_SECTION_HEADER* _sections;
 	IMAGE_OPTIONAL_HEADER32* _opt32{ nullptr };
 	IMAGE_OPTIONAL_HEADER64* _opt64{ nullptr };
+	CComPtr<IMetaDataImport> _spMetadata;
 	bool _valid = false;
 };
