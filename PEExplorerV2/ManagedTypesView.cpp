@@ -31,6 +31,7 @@ int ManagedTypesView::GetItemCount() {
 	if (_types.empty()) {
 		auto mp = _parser->GetCLRParser();
 		ATLASSERT(mp);
+		mp->EnumRefTypes();
 		_types = mp->EnumTypes();
 	}
 	return static_cast<int>(_types.size());

@@ -175,6 +175,31 @@ struct ManagedType {
 	ManagedTypeKind Kind;
 };
 
+struct ManagedTypeRef {
+	CString Name;
+	mdTypeDef Token;
+	mdToken Scope;
+};
+
+enum class ManagedMemberType {
+	Method,
+	Property,
+	Event,
+	Constructor,
+	Type,
+};
+
+struct ManagedMember {
+	CString Name;
+	mdToken Token;
+	mdToken ClassToken;
+	ManagedMemberType Type;
+	DWORD Attributes;
+	DWORD OtherFlags;
+	DWORD CodeRva;
+	CString StringConst;
+};
+
 class PEParser final {
 public:
 	explicit PEParser(const wchar_t* path);
