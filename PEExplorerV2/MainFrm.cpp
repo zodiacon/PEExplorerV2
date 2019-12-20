@@ -99,7 +99,6 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 			auto view = new SummaryView(m_Parser.get());
 			auto summary = new CGenericListView(view, true);
 			summary->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
-			view->Init(*summary);
 			m_view.AddPage(*summary, L"Summary", 0, (PVOID)type);
 			break;
 		}
@@ -109,7 +108,6 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 			auto view = new ExportsView(m_Parser.get(), this);
 			auto lv = new CGenericListView(view, true);
 			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
-			view->Init(*lv);
 			m_view.AddPage(*lv, L"Exports", 3, (PVOID)type);
 			break;
 		}
@@ -127,7 +125,6 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 			auto view = new SectionsView(m_Parser.get(), this);
 			auto lv = new CGenericListView(view, true);
 			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
-			view->Init(*lv);
 			m_view.AddPage(*lv, L"Sections", 1, (PVOID)type);
 			break;
 		}
@@ -137,7 +134,6 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 			auto view = new DataDirectoriesView(m_Parser.get(), this);
 			auto lv = new CGenericListView(view, true);
 			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle | LVS_NOSORTHEADER);
-			view->Init(*lv);
 			m_view.AddPage(*lv, L"Directories", 2, (PVOID)type);
 			break;
 		}
@@ -155,7 +151,6 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 			auto view = new ManagedTypesView(m_Parser.get());
 			auto lv = new CGenericListView(view);
 			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
-			view->Init(*lv);
 			m_view.AddPage(*lv, L".NET (CLR)", 9, (PVOID)type);
 			break;
 		}
@@ -174,7 +169,6 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 			auto view = new StructureView(m_Parser.get(), structProvider);
 			auto lv = new CGenericListView(view, true);
 			lv->Create(m_view, rcDefault, nullptr, ListViewDefaultStyle | LVS_NOSORTHEADER);
-			view->Init(*lv);
 			m_view.AddPage(*lv, structProvider->GetName(), 7, (PVOID)type);
 			break;
 		}
@@ -230,7 +224,7 @@ void CMainFrame::AddRecentFiles(bool first) {
 	popup.CreatePopupMenu();
 	int i = 0;
 	for (auto& file : m_RecentFiles) {
-		popup.AppendMenuW(MF_BYCOMMAND, ID_FILE_RECENTFILES + i++, file);
+		popup.AppendMenuW(MF_BYCOMMAND, ATL_IDS_MRU_FILE + i++, file);
 	}
 	menu.GetSubMenu(0).InsertMenu(5, MF_BYPOSITION, popup.Detach(), L"Recent Files");
 	if (m_RecentFiles.size() == 1 || first)
@@ -247,7 +241,7 @@ void CMainFrame::AddToRecentFiles(PCWSTR file) {
 	}
 	else {
 		m_RecentFiles.insert(m_RecentFiles.begin(), file);
-		if (m_RecentFiles.size() > 10)
+		if (m_RecentFiles.size() > 15)
 			m_RecentFiles.pop_back();
 	}
 
@@ -538,7 +532,7 @@ LRESULT CMainFrame::OnWindowActivate(WORD, WORD id, HWND, BOOL&) {
 }
 
 LRESULT CMainFrame::OnRecentFile(WORD, WORD id, HWND, BOOL&) {
-	int index = id - ID_FILE_RECENTFILES;
+	int index = id - ATL_IDS_MRU_FILE;
 	auto path = m_RecentFiles[index];
 	if (path == m_FilePath && m_Parser != nullptr)
 		return 0;
@@ -617,7 +611,7 @@ CTreeItem CMainFrame::CreateHexView(TreeNodeType type, PCWSTR title, LPARAM para
 			else {
 				auto dir = m_Parser->GetDataDirectory(number);
 				ATLASSERT(dir);
-				buffer->SetData(0, (const BYTE*)m_Parser->GetAddress(dir->VirtualAddress), dir->Size);
+				buffer->SetData(0, (const BYTE*) m_Parser->GetAddress(dir->VirtualAddress), dir->Size);
 				bias = dir->VirtualAddress;
 			}
 			int image = sectionView ? 1 : 2;

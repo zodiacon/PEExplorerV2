@@ -17,7 +17,6 @@ LRESULT CResourcesFrameView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_splitter.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 
 	m_resView.Create(m_splitter, rcDefault, nullptr, ListViewDefaultStyle | LVS_SINGLESEL, WS_EX_CLIENTEDGE, IDC_RES);
-	m_resViewImpl.Init(m_resView);
 
 	m_hexView.Create(m_splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE, IDC_HEX);
 	auto& hex = m_hexView.GetHexControl();

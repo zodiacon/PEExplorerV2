@@ -26,6 +26,8 @@ LRESULT CGenericListView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 
 	SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT);
 
+	m_Callback->Init(*this);
+
 	Refresh();
 
 	return 0;

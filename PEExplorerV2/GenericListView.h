@@ -4,6 +4,7 @@
 
 struct IGenericListViewCallback {
 	virtual int GetItemCount() = 0;
+	virtual void Init(CListViewCtrl& lv) = 0;
 	virtual CString GetItemText(int row, int col) = 0;
 	virtual int GetIcon(int row) {
 		return -1;
