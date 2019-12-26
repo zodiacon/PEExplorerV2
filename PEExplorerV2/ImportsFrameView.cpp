@@ -3,8 +3,8 @@
 
 const DWORD ListViewDefaultStyle = WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_OWNERDATA | LVS_SHOWSELALWAYS | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
-CImportsFrameView::CImportsFrameView(PEParser* parser)
-	: m_Parser(parser), m_libViewImpl(parser), m_libView(&m_libViewImpl),
+CImportsFrameView::CImportsFrameView(PEParser* parser, IMainFrame* frame)
+	: m_Parser(parser), m_libViewImpl(parser, frame), m_libView(&m_libViewImpl),
 	m_importsView(&m_importsImpl) {
 }
 

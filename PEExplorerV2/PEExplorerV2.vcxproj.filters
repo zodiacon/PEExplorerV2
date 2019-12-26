@@ -309,6 +309,15 @@
     <Image Include="res\Managed\interface.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
+    <Image Include="res\window-new.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\close_all.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\delete.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -106,6 +106,10 @@ BEGIN
     BEGIN
         MENUITEM "View Assembly",               ID_OBJECT_VIEWDATA
     END
+    POPUP "importlib"
+    BEGIN
+        MENUITEM "Open in New Window",          ID_IMPORTLIB_OPENINNEWWINDOW
+    END
 END
 
 
@@ -189,6 +193,12 @@ IDI_EVENT               ICON                    "res\\Managed\\event.ico"
 IDI_INTERFACE           ICON                    "res\\Managed\\interface.ico"
 
 IDI_ATTRIBUTE           ICON                    "res\\Managed\\attribute.ico"
+
+IDI_NEWWINDOW           ICON                    "res\\window-new.ico"
+
+IDI_CLOSEALL            ICON                    "res\\close_all.ico"
+
+IDI_DELETE              ICON                    "res\\delete.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

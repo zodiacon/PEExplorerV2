@@ -114,7 +114,7 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 
 		case TreeNodeType::Imports:
 		{
-			auto view = new CImportsFrameView(m_Parser.get());
+			auto view = new CImportsFrameView(m_Parser.get(), this);
 			view->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE);
 			m_view.AddPage(*view, L"Imports", 4, (PVOID)type);
 			break;
@@ -173,6 +173,7 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 			break;
 		}
 	}
+	UIEnable(ID_WINDOW_CLOSE, m_view.GetPageCount() > 0);
 }
 
 bool CMainFrame::SwitchToTab(TreeNodeType type) {
@@ -187,11 +188,11 @@ bool CMainFrame::SwitchToTab(TreeNodeType type) {
 	return false;
 }
 
-void CMainFrame::DoFileOpen(PCWSTR path, bool newWindow) {
+bool CMainFrame::DoFileOpen(PCWSTR path, bool newWindow) {
 	auto file = std::make_unique<PEParser>(path);
 	if (!file->IsValid()) {
 		MessageBox(L"Error opening file.", L"PE Explorer", MB_ICONERROR);
-		return;
+		return false;
 	}
 
 	if (!newWindow) {
@@ -213,6 +214,7 @@ void CMainFrame::DoFileOpen(PCWSTR path, bool newWindow) {
 		frame->ShowWindow(SW_SHOWDEFAULT);
 	}
 	AddToRecentFiles(path);
+	return true;
 }
 
 void CMainFrame::AddRecentFiles(bool first) {
@@ -302,6 +304,8 @@ LRESULT CMainFrame::OnWindowClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	}
 	else
 		::MessageBeep((UINT)-1);
+	UIEnable(ID_WINDOW_CLOSE, m_view.GetPageCount() > 0);
+
 	return 0;
 }
 
@@ -317,9 +321,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
-	// attach menu
 	m_CmdBar.AttachMenu(GetMenu());
-	// remove old menu
 	SetMenu(nullptr);
 	m_CmdBar.m_bAlphaImages = true;
 
@@ -336,6 +338,10 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		{ ID_VIEW_DIRECTORIES, IDI_DIRS },
 		{ ID_VIEW_DOTNET, IDI_COMPONENT },
 		{ ID_OBJECT_VIEWDATA, IDI_VIEW },
+		{ ID_WINDOW_NEW, IDI_NEWWINDOW },
+		{ ID_IMPORTLIB_OPENINNEWWINDOW, IDI_NEWWINDOW },
+		{ ID_FILE_CLOSE, IDI_CLOSE },
+		{ ID_WINDOW_CLOSE, IDI_DELETE },
 	};
 	for (auto& cmd : cmds)
 		m_CmdBar.AddIcon(AtlLoadIcon(cmd.icon), cmd.id);
@@ -362,12 +368,14 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		{ ID_VIEW_IMPORTS, IDI_IMPORTS, 0 },
 		{ ID_VIEW_RESOURCES, IDI_RESOURCES, 0 },
 		{ ID_VIEW_DOTNET, IDI_COMPONENT, 0 },
+		{ 0},
+		{ ID_WINDOW_CLOSE, IDI_DELETE },
 	};
 	for (auto& b : buttons) {
 		if (b.id == 0)
 			tb.AddSeparator(0);
 		else {
-			int image = tbImages.AddIcon(AtlLoadIcon(b.image));
+			int image = tbImages.AddIcon(AtlLoadIconImage(b.image, 0, 24, 24));
 			tb.AddButton(b.id, b.style, TBSTATE_ENABLED, image, nullptr, 0);
 		}
 	}
@@ -428,6 +436,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	pLoop->AddIdleHandler(this);
 
 	UpdateUI();
+	UIEnable(ID_WINDOW_CLOSE, FALSE);
 
 	return 0;
 }
@@ -585,6 +594,10 @@ CTreeItem CMainFrame::CreateAssemblyView(const ExportedSymbol& sym) {
 
 	cs_close(&handle);
 	return node;
+}
+
+bool CMainFrame::OpenDocument(PCWSTR name, bool newWindow) {
+	return DoFileOpen(name, newWindow);
 }
 
 CTreeItem CMainFrame::CreateHexView(TreeNodeType type, PCWSTR title, LPARAM param) {

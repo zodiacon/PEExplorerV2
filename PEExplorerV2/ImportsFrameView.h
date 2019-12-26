@@ -7,7 +7,7 @@
 class CImportsFrameView : 
 	public CWindowImpl<CImportsFrameView> {
 public:
-	CImportsFrameView(PEParser* parser);
+	CImportsFrameView(PEParser* parser, IMainFrame* frame);
 
 	enum { IDC_LIBS = 123, IDC_IMPORTS };
 

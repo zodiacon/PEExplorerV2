@@ -273,11 +273,13 @@
   <ItemGroup>
     <Image Include="res\assembly.ico" />
     <Image Include="res\close.ico" />
+    <Image Include="res\close_all.ico" />
     <Image Include="res\component.ico" />
     <Image Include="res\copy.ico" />
     <Image Include="res\cpu_back.ico" />
     <Image Include="res\database-export.ico" />
     <Image Include="res\database-import.ico" />
+    <Image Include="res\delete.ico" />
     <Image Include="res\dependencies.ico" />
     <Image Include="res\dll.ico" />
     <Image Include="res\file_dll.ico" />
@@ -307,6 +309,7 @@
     <Image Include="res\resources.ico" />
     <Image Include="res\save.ico" />
     <Image Include="res\structure.ico" />
+    <Image Include="res\window-new.ico" />
     <Image Include="res\zoom.ico" />
   </ItemGroup>
   <ItemGroup>

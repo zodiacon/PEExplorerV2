@@ -3,8 +3,10 @@
 #include "resource.h"
 #include <algorithm>
 #include "SortHelper.h"
+#include "resource.h"
 
-ImportsView::ImportsView(PEParser* parser) : _parser(parser) {
+ImportsView::ImportsView(PEParser* parser, IMainFrame* frame) : 
+	_parser(parser), _frame(frame) {
 }
 
 void ImportsView::Init(CListViewCtrl& lv) {
@@ -51,6 +53,18 @@ int ImportsView::GetIcon(int row) {
 
 const ImportedLibrary& ImportsView::GetLibrary(int selected) const {
 	return _libraries[selected];
+}
+
+void ImportsView::OnContextMenu(const POINT& pt, int selected) {
+	if (selected < 0)
+		return;
+
+	CMenu menu;
+	menu.LoadMenu(IDR_CONTEXT);
+	auto cmd = (UINT)_frame->ShowContextMenu(menu.GetSubMenu(2), pt, TPM_RETURNCMD);
+	if (cmd == ID_IMPORTLIB_OPENINNEWWINDOW) {
+		_frame->OpenDocument(CString(_libraries[selected].Name.c_str()), true);
+	}
 }
 
 bool ImportsView::CompareItems(ImportedLibrary& lib1, ImportedLibrary& lib2, int col, bool asc) {

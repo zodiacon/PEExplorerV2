@@ -44,8 +44,11 @@
 #define IDI_ENUM                        235
 #define IDI_EVENT                       236
 #define IDI_INTERFACE                   237
-#define IDI_ICON3                       238
 #define IDI_ATTRIBUTE                   238
+#define IDI_NEWWINDOW                   239
+#define IDI_CLOSEALL                    240
+#define IDI_ICON4                       241
+#define IDI_DELETE                      241
 #define ID_VIEW_TREEPANE                32774
 #define ID_OPTIONS_ALWAYSONTOP          32775
 #define ID_VIEW_SUMMARY                 32777
@@ -62,13 +65,14 @@
 #define ID_FILE_OPENINANEWWINDOW        32801
 #define ID_OBJECT_VIEWDATA              32802
 #define ID_WINDOW_NEWWINDOW             32803
+#define ID_IMPORTLIB_OPENINNEWWINDOW    32804
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        239
-#define _APS_NEXT_COMMAND_VALUE         32804
+#define _APS_NEXT_RESOURCE_VALUE        242
+#define _APS_NEXT_COMMAND_VALUE         32805
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           102
 #endif
