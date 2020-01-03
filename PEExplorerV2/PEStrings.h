@@ -19,5 +19,10 @@ struct PEStrings abstract final {
 	static PCWSTR ResourceTypeToString(WORD id);
 	static CString FormatInstruction(cs_insn& inst);
 	static CString ManagedTypeAttributesToString(CorTypeAttr attr);
+	static CString MemberAttributesToString(const ManagedMember& member);
+	static CString MethodAttributesToString(CorMethodAttr attr);
+	static CString FieldAttributesToString(CorFieldAttr attr);
+	static CString PropertyAttributesToString(CorPropertyAttr attr);
+	static CString EventAttributesToString(CorEventAttr attr);
 };
 

@@ -99,6 +99,9 @@
     <ClCompile Include="ManagedTypesView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="TypeMembersView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainFrm.h">
@@ -189,6 +192,9 @@
       <Filter>Views</Filter>
     </ClInclude>
     <ClInclude Include="ManagedTypesView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeMembersView.h">
       <Filter>Views</Filter>
     </ClInclude>
   </ItemGroup>
@@ -309,14 +315,29 @@
     <Image Include="res\Managed\interface.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
-    <Image Include="res\window-new.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="res\close_all.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\delete.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\window-new.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\Managed\field.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\Managed\method.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\Managed\property.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\Managed\method-internet.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\Managed\method-new.ico">
+      <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

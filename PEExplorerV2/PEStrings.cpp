@@ -1,6 +1,11 @@
 #include "pch.h"
 #include "PEStrings.h"
 
+static PCWSTR memberVisiblity[] = {
+	L"Private Scope", L"Private", L"Protected and Internal", L"Internal", L"Protected",
+	L"Protected or Internal", L"Public"
+};
+
 PCWSTR PEStrings::SubsystemTypeToString(SubsystemType type) {
 	switch (type) {
 		case SubsystemType::Native: return L"Native";
@@ -202,6 +207,117 @@ CString PEStrings::ManagedTypeAttributesToString(CorTypeAttr attr) {
 		text += L"Windows Runtime, ";
 
 	return text.Left(text.GetLength() - 2);
+}
+
+CString PEStrings::MemberAttributesToString(const ManagedMember& member) {
+	switch (member.Type) {
+		case ManagedMemberType::Method:
+		case ManagedMemberType::Constructor:
+		case ManagedMemberType::StaticConstructor:
+			return MethodAttributesToString((CorMethodAttr)member.Attributes);
+		case ManagedMemberType::Field:
+			return FieldAttributesToString((CorFieldAttr)member.Attributes);
+		case ManagedMemberType::Property:
+			return PropertyAttributesToString((CorPropertyAttr)member.Attributes);
+		case ManagedMemberType::Event:
+			return EventAttributesToString((CorEventAttr)member.Attributes);
+	}
+
+	return L"";
+}
+
+CString PEStrings::MethodAttributesToString(CorMethodAttr attr) {
+	CString text = memberVisiblity[attr & mdMemberAccessMask];
+	text += L", ";
+
+	if (attr & mdStatic)
+		text += L"Static, ";
+	if (attr & mdFinal)
+		text += "Final, ";
+	if (attr & mdVirtual)
+		text += "Virtual, ";
+	if (attr & mdHideBySig)
+		text += "Hide By Sig, ";
+
+	if ((attr & mdVtableLayoutMask) == mdNewSlot)
+		text += L"New Slot, ";
+
+	if (attr & mdCheckAccessOnOverride)
+		text += "Check Access on Override, ";
+	if (attr & mdAbstract)
+		text += "Abstract, ";
+	if (attr & mdSpecialName)
+		text += "Special Name, ";
+	if (attr & mdPinvokeImpl)
+		text += "P/Invoke, ";
+	if (attr & mdUnmanagedExport)
+		text += "Unmanaged Export, ";
+
+	if ((attr & mdReservedMask) == mdRTSpecialName)
+		text += L"Runtime Special Name, ";
+	if ((attr & mdReservedMask) == mdHasSecurity)
+		text += L"Has Security, ";
+	if ((attr & mdReservedMask) == mdRequireSecObject)
+		text += L"Require Secure Object, ";
+
+	return text.Left(text.GetLength() - 2);
+}
+
+CString PEStrings::FieldAttributesToString(CorFieldAttr attr) {
+	CString text = memberVisiblity[attr & fdFieldAccessMask];
+	text += L", ";
+
+	if (attr & fdStatic)
+		text += L"Static, ";
+	if (attr & fdInitOnly)
+		text += L"Read Only, ";
+	if (attr & fdLiteral)
+		text += L"Literal, ";
+	if (attr & fdNotSerialized)
+		text += L"Not Serialized, ";
+	if (attr & fdSpecialName)
+		text += L"Special Name, ";
+	if (attr & fdPinvokeImpl)
+		text += L"P/Invoke, ";
+
+	if ((attr & fdReservedMask) == fdRTSpecialName)
+		text += L"Runtime Special Name, ";
+	if ((attr & fdReservedMask) == fdHasFieldMarshal)
+		text += L"Has Field Marshal, ";
+	if ((attr & fdReservedMask) == fdHasDefault)
+		text += L"Has Default, ";
+	if ((attr & fdReservedMask) == fdHasFieldRVA)
+		text += L"Has Field RVA, ";
+
+	return text.Left(text.GetLength() - 2);
+}
+
+CString PEStrings::PropertyAttributesToString(CorPropertyAttr attr) {
+	CString text;
+
+	if (IsPrSpecialName(attr))
+		text += L"Special Name, ";
+	if (IsPrRTSpecialName(attr))
+		text += L"Runtime Special Name";
+	if (IsPrHasDefault(attr))
+		text += L"Has Default, ";
+
+	if (!text.IsEmpty())
+		text = text.Left(text.GetLength() - 2);
+	return text;
+}
+
+CString PEStrings::EventAttributesToString(CorEventAttr attr) {
+	CString text;
+
+	if (IsEvSpecialName(attr))
+		text += L"Special Name, ";
+	if (IsEvRTSpecialName(attr))
+		text += L"Runtime Special Name";
+
+	if (!text.IsEmpty())
+		text = text.Left(text.GetLength() - 2);
+	return text;
 }
 
 

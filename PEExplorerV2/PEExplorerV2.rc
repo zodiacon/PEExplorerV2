@@ -110,6 +110,10 @@ BEGIN
     BEGIN
         MENUITEM "Open in New Window",          ID_IMPORTLIB_OPENINNEWWINDOW
     END
+    POPUP "type"
+    BEGIN
+        MENUITEM "View Members",                ID_TYPE_VIEWMEMBERS
+    END
 END
 
 
@@ -200,6 +204,16 @@ IDI_CLOSEALL            ICON                    "res\\close_all.ico"
 
 IDI_DELETE              ICON                    "res\\delete.ico"
 
+IDI_METHOD              ICON                    "res\\Managed\\method.ico"
+
+IDI_PROPERTY            ICON                    "res\\Managed\\property.ico"
+
+IDI_FIELD               ICON                    "res\\Managed\\field.ico"
+
+IDI_CCTOR               ICON                    "res\\Managed\\method-internet.ico"
+
+IDI_CTOR                ICON                    "res\\Managed\\method-new.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -212,7 +226,7 @@ CAPTION "About PE Explorer"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,68,81,50,14
-    CTEXT           "PE Explorer v2.0\n\n(C)2019 Pavel Yosifovich",IDC_STATIC,51,25,78,32
+    CTEXT           "PE Explorer v2.0\n\n(C)2019-2020 Pavel Yosifovich",IDC_STATIC,42,26,104,32
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
 END
 
@@ -317,7 +331,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "PE Explorer v2.0 (C)2019 Pavel Yosifovich"
+    IDR_MAINFRAME           "PE Explorer v2.0 (C)2019-2020 Pavel Yosifovich"
 END
 
 STRINGTABLE

@@ -22,6 +22,8 @@
 #include "Capstone/capstone.h"
 #include "AssemblyView.h"
 #include "ManagedTypesView.h"
+#include "TypeMembersView.h"
+#include "CLRMetadataParser.h"
 
 #pragma comment(lib, "capstone/capstone.lib")
 
@@ -148,7 +150,11 @@ void CMainFrame::CreateNewTab(TreeNodeType type) {
 
 		case TreeNodeType::DotNet:
 		{
-			auto view = new ManagedTypesView(m_Parser.get());
+			if (!m_Parser->IsCLRMetadataAvailable()) {
+				AtlMessageBox(*this, L"CLR Metadata is not available (probably bad format)", IDR_MAINFRAME, MB_ICONERROR);
+				break;
+			}
+			auto view = new ManagedTypesView(m_Parser.get(), this);
 			auto lv = new CGenericListView(view);
 			lv->Create(m_view, nullptr, nullptr, ListViewDefaultStyle);
 			m_view.AddPage(*lv, L".NET (CLR)", 9, (PVOID)type);
@@ -300,6 +306,10 @@ LRESULT CMainFrame::OnWindowClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	if (nActivePage != -1) {
 		auto data = PtrToInt(m_view.GetPageData(nActivePage));
 		m_view.RemovePage(nActivePage);
+		auto it = m_TreeNodes.find(data);
+		ATLASSERT(it != m_TreeNodes.end());
+		if(data >= 0x10000)
+			it->second.Delete();
 		m_TreeNodes.erase(data);
 	}
 	else
@@ -368,7 +378,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		{ ID_VIEW_IMPORTS, IDI_IMPORTS, 0 },
 		{ ID_VIEW_RESOURCES, IDI_RESOURCES, 0 },
 		{ ID_VIEW_DOTNET, IDI_COMPONENT, 0 },
-		{ 0},
+		{ 0 },
 		{ ID_WINDOW_CLOSE, IDI_DELETE },
 	};
 	for (auto& b : buttons) {
@@ -402,7 +412,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	images.Create(size, size, ILC_COLOR32, 10, 4);
 	UINT icons[] = {
 		IDI_INFO, IDI_SECTIONS, IDI_DIRS, IDI_EXPORTS, IDI_IMPORTS, IDI_RESOURCES,
-		IDI_FILE_EXE, IDI_FILE_DLL, IDI_HEADERS, IDI_STRUCT, IDI_EXPORT, IDI_COMPONENT
+		IDI_FILE_EXE, IDI_FILE_DLL, IDI_HEADERS, IDI_STRUCT, IDI_EXPORT, IDI_COMPONENT,
+		IDI_CLASS
 	};
 
 	for (auto id : icons)
@@ -417,7 +428,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	tabImages.Create(16, 16, ILC_COLOR32, 10, 4);
 	UINT tabicons[] = {
 		IDI_INFO, IDI_SECTIONS, IDI_DIRS, IDI_EXPORTS, IDI_IMPORTS, IDI_RESOURCES, IDI_HEADERS, IDI_STRUCT,
-		IDI_EXPORT, IDI_COMPONENT
+		IDI_EXPORT, IDI_COMPONENT, IDI_CLASS
 	};
 	for (auto id : tabicons)
 		tabImages.AddIcon(AtlLoadIconImage(id, 64, 16, 16));
@@ -583,7 +594,7 @@ CTreeItem CMainFrame::CreateAssemblyView(const ExportedSymbol& sym) {
 	auto count = cs_disasm(handle, address, 0x600, m_Parser->GetOptionalHeader64().ImageBase + sym.Address, 0, &insn);
 	if (count > 0) {
 		node = m_TreeNodes[int(TreeNodeType::Exports)].InsertAfter(CString(sym.Name.c_str()), nullptr, 10);
-		auto view = new CAssemblyView(node, insn, static_cast<int>(count));
+		auto view = new CAssemblyView(insn, static_cast<int>(count));
 		view->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 		auto data = (int)TreeNodeType::ExportView + sym.Ordinal;
 		m_view.AddPage(*view, CString(sym.Name.c_str()), 8, IntToPtr(data));
@@ -598,6 +609,26 @@ CTreeItem CMainFrame::CreateAssemblyView(const ExportedSymbol& sym) {
 
 bool CMainFrame::OpenDocument(PCWSTR name, bool newWindow) {
 	return DoFileOpen(name, newWindow);
+}
+
+CTreeItem CMainFrame::CreateTypeMembersView(const ManagedType& type) {
+	size_t data = type.Token + (size_t)TreeNodeType::ManagedTypeMembersView;
+	auto it = m_TreeNodes.find(data);
+	if (it != m_TreeNodes.end()) {
+		SwitchToTab((TreeNodeType)data);
+		return it->second;
+	}
+
+	auto impl = new TypeMembersView(*m_Parser->GetCLRParser(), type);
+	auto view = new CGenericListView(impl, true);
+	auto hWnd = view->Create(m_view, rcDefault, nullptr, ListViewDefaultStyle);
+	m_view.AddPage(hWnd, type.Name + L" Members", 10, (PVOID)data);
+	auto node = m_TreeNodes[int(TreeNodeType::DotNet)].InsertAfter(type.Name, nullptr, 12);
+	m_TreeNodes.insert({ data, node });
+	node.EnsureVisible();
+	node.SetData(data);
+
+	return node;
 }
 
 CTreeItem CMainFrame::CreateHexView(TreeNodeType type, PCWSTR title, LPARAM param) {

@@ -88,6 +88,7 @@ private:
 	CTreeItem CreateHexView(TreeNodeType type, PCWSTR title, LPARAM param) override;
 	CTreeItem CreateAssemblyView(const ExportedSymbol& symbol) override;
 	bool OpenDocument(PCWSTR name, bool newWindow) override;
+	CTreeItem CreateTypeMembersView(const ManagedType& type) override;
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
@@ -116,7 +117,7 @@ private:
 	CCommandBarCtrl m_CmdBar;
 	std::unique_ptr<PEParser> m_Parser;
 	CString m_FileName, m_FilePath;
-	std::unordered_map<int, CTreeItem> m_TreeNodes;
+	std::unordered_map<size_t, CTreeItem> m_TreeNodes;
 	static int m_TotalFrames;
 
 };

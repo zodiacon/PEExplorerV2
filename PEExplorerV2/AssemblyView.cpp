@@ -2,8 +2,8 @@
 #include "AssemblyView.h"
 #include "PEStrings.h"
 
-CAssemblyView::CAssemblyView(CTreeItem node, cs_insn* insts, int count)
-	: m_Node(std::move(node)), m_Inst(insts), m_Count(count) {
+CAssemblyView::CAssemblyView(cs_insn* insts, int count) : 
+	m_Inst(insts), m_Count(count) {
 }
 
 LRESULT CAssemblyView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
@@ -20,14 +20,6 @@ LRESULT CAssemblyView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 			break;
 	}
 	m_Edit.SetWindowText(text);
-
-	return 0;
-}
-
-LRESULT CAssemblyView::OnDestroy(UINT, WPARAM, LPARAM, BOOL&) {
-	cs_free(m_Inst, m_Count);
-	if (m_Node)
-		m_Node.Delete();
 
 	return 0;
 }

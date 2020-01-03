@@ -20,7 +20,7 @@ PEParser::PEParser(const wchar_t* path) {
 		auto hr = ::CoCreateInstance(CLSID_CorMetaDataDispenser, nullptr, CLSCTX_ALL, 
 			IID_IMetaDataDispenser, reinterpret_cast<void**>(&spDispenser));
 		if (SUCCEEDED(hr)) {
-			spDispenser->OpenScope(path, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&_spMetadata));
+			hr = spDispenser->OpenScope(path, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&_spMetadata));
 		}
 	}
 }
@@ -225,11 +225,13 @@ IMAGE_COR20_HEADER* PEParser::GetCLRHeader() const {
 	return header;
 }
 
-std::unique_ptr<CLRMetadataParser> PEParser::GetCLRParser() {
+CLRMetadataParser* PEParser::GetCLRParser() const {
 	if (!IsManaged())
 		return nullptr;
 
-	return std::make_unique<CLRMetadataParser>(_spMetadata);
+	if(_clrParser == nullptr)
+		_clrParser = std::make_unique<CLRMetadataParser>(_spMetadata);
+	return _clrParser.get();
 }
 
 void PEParser::CheckValidity() {
@@ -362,4 +364,8 @@ bool PEParser::GetImportAddressTable() const {
 	auto table = static_cast<IMAGE_THUNK_DATA64*>(GetAddress(dir->VirtualAddress));
 	
 	return true;
+}
+
+bool PEParser::IsCLRMetadataAvailable() const {
+	return _spMetadata;
 }

@@ -71,120 +71,205 @@ std::vector<ManagedTypeRef> CLRMetadataParser::EnumRefTypes() const {
 	return _refTypes;
 }
 
-std::vector<ManagedMember> CLRMetadataParser::EnumMethods(mdToken token) const {
+std::vector<ManagedMember> CLRMetadataParser::EnumMethods(mdToken token, bool includeInherited) const {
 	std::vector<ManagedMember> members;
+	EnumMethodsInternal(token, members);
+	return members;
+}
+
+std::vector<ManagedMember> CLRMetadataParser::EnumFields(mdToken token, bool includeInherited) const {
+	std::vector<ManagedMember> members;
+	EnumFieldsInternal(token, members);
+	return members;
+}
+
+std::vector<ManagedMember> CLRMetadataParser::EnumProperties(mdToken token, bool includeInherited) const {
+	std::vector<ManagedMember> members;
+	EnumPropertiesInternal(token, members);
+	return members;
+}
+
+std::vector<ManagedMember> CLRMetadataParser::EnumEvents(mdToken token, bool includeInherited) const {
+	std::vector<ManagedMember> members;
+	EnumEventsInternal(token, members);
+	return members;
+}
+
+ManagedTypeKind CLRMetadataParser::GetTypeKind(const ManagedType& type) const {
+	if ((_enum == 0 && type.BaseTypeName == L"System.Enum") || (_enum && type.BaseTypeToken == _enum)) {
+		if (_enum == 0)
+			_enum = type.BaseTypeToken;
+		return ManagedTypeKind::Enum;
+	}
+	if ((_delegate == 0 && type.BaseTypeName == L"System.MulticastDelegate") || (_delegate && type.BaseTypeToken == _delegate)) {
+		if (_delegate == 0)
+			_delegate = type.BaseTypeToken;
+		return ManagedTypeKind::Delegate;
+	}
+	if ((_struct == 0 && type.BaseTypeName == L"System.ValueType") || (_struct && type.BaseTypeToken == _struct)) {
+		if (_struct == 0)
+			_struct = type.BaseTypeToken;
+		return ManagedTypeKind::Struct;
+	}
+	if ((_attribute == 0 && type.BaseTypeName == L"System.Attribute") || (_attribute && type.BaseTypeToken == _attribute)) {
+		if (_attribute == 0)
+			_attribute = type.BaseTypeToken;
+		return ManagedTypeKind::Attribute;
+	}
+	return ((type.Attributes & tdClassSemanticsMask) == tdInterface) ? ManagedTypeKind::Interface : ManagedTypeKind::Class;
+}
+
+void CLRMetadataParser::EnumMethodsInternal(mdToken token, std::vector<ManagedMember>& members, bool includeInherited) const {
 	HCORENUM hEnum = nullptr;
 	mdTypeDef defs[512];
 	ULONG count;
 	WCHAR name[256];
 	ULONG len;
-	DWORD attr, implFlags;
 	PCCOR_SIGNATURE sig;
 	ULONG sigSize;
-	ULONG codeRva;
 	if (S_OK == _spImport->EnumMethods(&hEnum, token, defs, _countof(defs), &count)) {
-		members.reserve(count);
-		mdToken tkClass;
+		members.reserve(count + members.size());
 		for (ULONG i = 0; i < count; i++) {
-			_spImport->GetMethodProps(defs[i], &tkClass, name, _countof(name), &len, &attr, &sig, &sigSize, &codeRva, &implFlags);
 			ManagedMember member;
+			_spImport->GetMethodProps(defs[i], &member.ClassToken, name, _countof(name), &len, &member.Attributes, &sig, &sigSize, &member.Method.CodeRva, &member.Method.ImplFlags);
 			member.Name = name;
 			member.Token = defs[i];
-			member.Type = ManagedMemberType::Method;
-			member.Attributes = attr;
-			member.CodeRva = codeRva;
-			member.OtherFlags = implFlags;
-			member.ClassToken = tkClass;
+			if (member.Name == COR_CTOR_METHOD_NAME_W)
+				member.Type = ManagedMemberType::Constructor;
+			else if (member.Name == COR_CCTOR_METHOD_NAME_W)
+				member.Type = ManagedMemberType::StaticConstructor;
+			else
+				member.Type = ManagedMemberType::Method;
 			members.emplace_back(std::move(member));
 		}
+		_spImport->CloseEnum(hEnum);
+		if (includeInherited) {
+			mdToken baseToken = 0;
+			_spImport->GetTypeDefProps(token, nullptr, 0, nullptr, nullptr, &baseToken);
+			if (baseToken && _refTypesMap.find(baseToken) == _refTypesMap.end())
+				EnumMethodsInternal(baseToken, members, includeInherited);
+		}
 	}
-	return members;
 }
 
-std::vector<ManagedMember> CLRMetadataParser::EnumFields(mdToken token) const {
-	std::vector<ManagedMember> members;
+void CLRMetadataParser::EnumFieldsInternal(mdToken token, std::vector<ManagedMember>& members, bool includeInherited) const {
 	HCORENUM hEnum = nullptr;
 	mdTypeDef defs[256];
 	ULONG count;
 	WCHAR name[256];
 	ULONG len;
-	DWORD attr, typeFlags;
 	PCCOR_SIGNATURE sig;
 	ULONG sigSize;
 	UVCP_CONSTANT str;
 	ULONG strSize;
 	if (S_OK == _spImport->EnumFields(&hEnum, token, defs, _countof(defs), &count)) {
-		members.reserve(count);
-		mdToken tkClass;
+		members.reserve(count + members.size());
 		for (ULONG i = 0; i < count; i++) {
-			_spImport->GetFieldProps(defs[i], &tkClass, name, _countof(name), &len, &attr, &sig, &sigSize, &typeFlags, &str, &strSize);
 			ManagedMember member;
+			_spImport->GetFieldProps(defs[i], &member.ClassToken, name, _countof(name), &len, &member.Attributes, &sig, &sigSize, &member.Field.TypeFlags, &str, &strSize);
 			member.Name = name;
 			member.Token = defs[i];
-			member.Type = ManagedMemberType::Method;
-			member.Attributes = attr;
-			member.OtherFlags = typeFlags;
-			member.ClassToken = tkClass;
+			member.Type = ManagedMemberType::Field;
 			members.emplace_back(std::move(member));
 		}
+		_spImport->CloseEnum(hEnum);
+		if (includeInherited) {
+			mdToken baseToken = 0;
+			_spImport->GetTypeDefProps(token, nullptr, 0, nullptr, nullptr, &baseToken);
+			if (baseToken && _refTypesMap.find(baseToken) == _refTypesMap.end())
+				EnumFieldsInternal(baseToken, members, includeInherited);
+		}
 	}
-	return members;
 }
 
-std::vector<ManagedMember> CLRMetadataParser::EnumProperties(mdToken token) const {
-	std::vector<ManagedMember> members;
+void CLRMetadataParser::EnumPropertiesInternal(mdToken token, std::vector<ManagedMember>& members, bool includeInherited) const {
 	HCORENUM hEnum = nullptr;
 	mdTypeDef defs[256];
 	ULONG count;
 	WCHAR name[256];
 	ULONG len;
-	DWORD attr, typeFlags;
 	PCCOR_SIGNATURE sig;
 	ULONG sigSize;
 	UVCP_CONSTANT str;
 	ULONG strSize;
 	if (S_OK == _spImport->EnumProperties(&hEnum, token, defs, _countof(defs), &count)) {
-		members.reserve(count);
-		mdToken tkClass, setter, getter;
+		members.reserve(count + members.size());
 		mdMethodDef otherMethods[16];
 		ULONG lenOtherMethods;
 		for (ULONG i = 0; i < count; i++) {
-			_spImport->GetPropertyProps(defs[i], &tkClass, name, _countof(name), &len, &attr, &sig, &sigSize, &typeFlags, &str, &strSize,
-				&setter, &getter, otherMethods, _countof(otherMethods), &lenOtherMethods);
 			ManagedMember member;
+			_spImport->GetPropertyProps(defs[i], &member.ClassToken, name, _countof(name), &len, &member.Attributes, &sig, &sigSize,
+				&member.Property.CPlusTypeFlag, &str, &strSize,
+				&member.Property.Setter, &member.Property.Getter, otherMethods, _countof(otherMethods), &lenOtherMethods);
 			member.Name = name;
 			member.Token = defs[i];
 			member.Type = ManagedMemberType::Property;
-			member.Attributes = attr;
-			member.OtherFlags = typeFlags;
-			member.ClassToken = tkClass;
 			members.emplace_back(std::move(member));
 		}
+		_spImport->CloseEnum(hEnum);
+		if (includeInherited) {
+			mdToken baseToken = 0;
+			_spImport->GetTypeDefProps(token, nullptr, 0, nullptr, nullptr, &baseToken);
+			if (baseToken && _refTypesMap.find(baseToken) == _refTypesMap.end())
+				EnumPropertiesInternal(baseToken, members, includeInherited);
+		}
 	}
+}
+
+void CLRMetadataParser::EnumEventsInternal(mdToken token, std::vector<ManagedMember>& members, bool includeInherited) const {
+	HCORENUM hEnum = nullptr;
+	mdTypeDef defs[256];
+	ULONG count;
+	WCHAR name[256];
+	ULONG len;
+	if (S_OK == _spImport->EnumEvents(&hEnum, token, defs, _countof(defs), &count)) {
+		members.resize(members.size() + count);
+		mdMethodDef otherMethods[8];
+		ULONG lenOtherMethods;
+		for (ULONG i = 0; i < count; i++) {
+			ManagedMember member;
+			_spImport->GetEventProps(defs[i], &member.ClassToken, name, _countof(name), &len, &member.Attributes,
+				&member.Event.EventType, &member.Event.AddMethod, &member.Event.RemoveMethod, &member.Event.FireMethod,
+				otherMethods, _countof(otherMethods), &lenOtherMethods);
+			member.Name = name;
+			member.Token = defs[i];
+			member.Type = ManagedMemberType::Event;
+			members.emplace_back(std::move(member));
+		}
+		_spImport->CloseEnum(hEnum);
+		if (includeInherited) {
+			mdToken baseToken = 0;
+			_spImport->GetTypeDefProps(token, nullptr, 0, nullptr, nullptr, &baseToken);
+			if (baseToken && _refTypesMap.find(baseToken) == _refTypesMap.end())
+				EnumEventsInternal(baseToken, members, includeInherited);
+		}
+	}
+}
+
+std::vector<ManagedMember> CLRMetadataParser::EnumMembers(mdToken token, bool includeInherited) const {
+	std::vector<ManagedMember> members;
+	members.reserve(32);
+	EnumFieldsInternal(token, members, includeInherited);
+	EnumMethodsInternal(token, members, includeInherited);
+	EnumPropertiesInternal(token, members, includeInherited);
+	EnumEventsInternal(token, members, includeInherited);
+
 	return members;
 }
 
+CString CLRMetadataParser::GetMethodName(mdMethodDef token) const {
+	WCHAR name[256];
+	ULONG len;
+	_spImport->GetMethodProps(token, nullptr, name, _countof(name), &len, nullptr, nullptr, nullptr, nullptr, nullptr);
+	return name;
+}
 
-ManagedTypeKind CLRMetadataParser::GetTypeKind(const ManagedType& type) const {
-	if ((_enum == 0 && type.BaseTypeName == L"System.Enum") || (_enum && type.BaseTypeToken == _enum)) {
-		if(_enum == 0)
-			_enum = type.BaseTypeToken;
-		return ManagedTypeKind::Enum;
-	}
-	if ((_delegate == 0 && type.BaseTypeName == L"System.MulticastDelegate") || (_delegate && type.BaseTypeToken == _delegate)) {
-		if(_delegate == 0)
-			_delegate = type.BaseTypeToken;
-		return ManagedTypeKind::Delegate;
-	}
-	if ((_struct == 0 && type.BaseTypeName == L"System.ValueType") || (_struct && type.BaseTypeToken == _struct)) {
-		if(_struct == 0)
-			_struct = type.BaseTypeToken;
-		return ManagedTypeKind::Struct;
-	}
-	if ((_attribute == 0 && type.BaseTypeName == L"System.Attribute") || (_attribute && type.BaseTypeToken == _attribute)) {
-		if(_attribute == 0)
-			_attribute = type.BaseTypeToken;
-		return ManagedTypeKind::Attribute;
-	}
-	return ((type.Attributes & tdClassSemanticsMask) == tdInterface) ? ManagedTypeKind::Interface : ManagedTypeKind::Class;
+CString CLRMetadataParser::GetTypeName(mdToken token) const {
+	WCHAR name[512];
+	DWORD len;
+	auto hr = _spImport->GetTypeDefProps(token, name, _countof(name), &len, nullptr, nullptr);
+	if (SUCCEEDED(hr))
+		return name;
+
+	return L"";
 }

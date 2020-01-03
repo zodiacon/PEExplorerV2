@@ -185,8 +185,10 @@ enum class ManagedMemberType {
 	Method,
 	Property,
 	Event,
+	Field,
 	Constructor,
 	Type,
+	StaticConstructor
 };
 
 struct ManagedMember {
@@ -195,9 +197,24 @@ struct ManagedMember {
 	mdToken ClassToken;
 	ManagedMemberType Type;
 	DWORD Attributes;
-	DWORD OtherFlags;
-	DWORD CodeRva;
-	CString StringConst;
+	union {
+		struct {
+			DWORD TypeFlags;
+		} Field;
+		struct {
+			DWORD ImplFlags;
+			DWORD CodeRva;
+		} Method;
+		struct {
+			mdMethodDef AddMethod, RemoveMethod, FireMethod;
+			mdToken EventType;
+		} Event;
+		struct {
+			mdToken Setter, Getter;
+			DWORD CPlusTypeFlag;
+		} Property;
+	};
+//	CString StringConst;
 };
 
 class PEParser final {
@@ -223,6 +240,7 @@ public:
 	const IMAGE_FILE_HEADER& GetFileHeader() const;
 	std::vector<ResourceType> EnumResources() const;
 	bool GetImportAddressTable() const;
+	bool IsCLRMetadataAvailable() const;
 
 	void* GetAddress(unsigned rva) const;
 
@@ -236,7 +254,7 @@ public:
 	}
 
 	IMAGE_COR20_HEADER* GetCLRHeader() const;
-	std::unique_ptr<CLRMetadataParser> GetCLRParser();
+	CLRMetadataParser* GetCLRParser() const;
 
 private:
 	void CheckValidity();
@@ -255,5 +273,6 @@ private:
 	IMAGE_OPTIONAL_HEADER32* _opt32{ nullptr };
 	IMAGE_OPTIONAL_HEADER64* _opt64{ nullptr };
 	CComPtr<IMetaDataImport> _spMetadata;
+	mutable std::unique_ptr<CLRMetadataParser> _clrParser;
 	bool _valid = false;
 };

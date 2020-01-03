@@ -6,7 +6,7 @@
 #include <algorithm>
 #include "SortHelper.h"
 
-ManagedTypesView::ManagedTypesView(PEParser* parser) : _parser(parser) {
+ManagedTypesView::ManagedTypesView(PEParser* parser, IMainFrame* frame) : _parser(parser), _frame(frame) {
 }
 
 void ManagedTypesView::Init(CListViewCtrl& lv) {
@@ -59,6 +59,20 @@ bool ManagedTypesView::Sort(int column, bool ascending) {
 
 int ManagedTypesView::GetIcon(int row) {
 	return (int)_types[row].Kind;
+}
+
+void ManagedTypesView::OnContextMenu(const POINT& pt, int selected) {
+	if (selected < 0)
+		return;
+
+	CMenu menu;
+	menu.LoadMenuW(IDR_CONTEXT);
+	auto cmd = _frame->ShowContextMenu(menu.GetSubMenu(3), pt, TPM_RETURNCMD);
+	switch (cmd) {
+		case ID_TYPE_VIEWMEMBERS:
+			_frame->CreateTypeMembersView(_types[selected]);
+			break;
+	}
 }
 
 PCWSTR ManagedTypesView::GetTypeKind(ManagedTypeKind kind) {
