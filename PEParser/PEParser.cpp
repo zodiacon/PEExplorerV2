@@ -53,6 +53,10 @@ bool PEParser::HasExports() const {
 	return GetDataDirectory(IMAGE_DIRECTORY_ENTRY_EXPORT)->VirtualAddress != 0;
 }
 
+bool PEParser::HasImports() const {
+	return GetDataDirectory(IMAGE_DIRECTORY_ENTRY_IMPORT)->VirtualAddress != 0;
+}
+
 int PEParser::GetSectionCount() const {
 	if (!IsValid())
 		return -1;

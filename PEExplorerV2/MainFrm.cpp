@@ -63,7 +63,9 @@ void CMainFrame::InitTree() {
 	InsertTreeItem(L"Directories", 2, 2, TreeNodeType::Directories, root);
 	if(m_Parser->HasExports())
 		InsertTreeItem(L"Exports", 3, 3, TreeNodeType::Exports, root);
-	InsertTreeItem(L"Imports", 4, 4, TreeNodeType::Imports, root);
+
+	if(m_Parser->HasImports())
+		InsertTreeItem(L"Imports", 4, 4, TreeNodeType::Imports, root);
 	InsertTreeItem(L"Resources", 5, 5, TreeNodeType::Resources, root);
 	if(m_Parser->IsManaged())
 		InsertTreeItem(L".NET (CLR)", 11, 11, TreeNodeType::DotNet, root);
@@ -86,7 +88,7 @@ void CMainFrame::UpdateUI() {
 	UIEnable(ID_VIEW_SUMMARY, fileOpen);
 	UIEnable(ID_VIEW_SECTIONS, fileOpen);
 	UIEnable(ID_VIEW_EXPORTS, fileOpen && m_Parser->HasExports());
-	UIEnable(ID_VIEW_IMPORTS, fileOpen);
+	UIEnable(ID_VIEW_IMPORTS, fileOpen && m_Parser->HasImports());
 	UIEnable(ID_VIEW_RESOURCES, fileOpen);
 	UIEnable(ID_VIEW_DIRECTORIES, fileOpen);
 	UIEnable(ID_VIEW_DOTNET, fileOpen && m_Parser->IsManaged());

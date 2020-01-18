@@ -227,6 +227,7 @@ public:
 	bool IsExecutable() const;
 	bool IsManaged() const;
 	bool HasExports() const;
+	bool HasImports() const;
 
 	int GetSectionCount() const;
 	const IMAGE_SECTION_HEADER* GetSectionHeader(ULONG section) const;
