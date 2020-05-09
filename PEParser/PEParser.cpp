@@ -9,11 +9,22 @@
 
 PEParser::PEParser(const wchar_t* path) {
 	_module = ::LoadLibraryEx(path, nullptr, LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE);
-	if (_module == nullptr)
-		return;
+	if (_module == nullptr) {
+		auto hFile = ::CreateFile(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
+		if (hFile == INVALID_HANDLE_VALUE)
+			return;
+		_hMemMap = ::CreateFileMapping(hFile, nullptr, PAGE_READONLY, 0, 0, nullptr);
+		::CloseHandle(hFile);
+		if (!_hMemMap)
+			return;
 
-	_address = (PBYTE)(((ULONG_PTR)_module) & ~0xf);
-
+		_address = (PBYTE)::MapViewOfFile(_hMemMap, FILE_MAP_READ, 0, 0, 0);
+		if (!_address)
+			return;
+	}
+	else {
+		_address = (PBYTE)(((ULONG_PTR)_module) & ~0xf);
+	}
 	CheckValidity();
 	if (IsValid() && IsManaged()) {
 		CComPtr<IMetaDataDispenser> spDispenser;
@@ -26,7 +37,11 @@ PEParser::PEParser(const wchar_t* path) {
 }
 
 PEParser::~PEParser() {
-	if (_address)
+	if (_hMemMap) {
+		::UnmapViewOfFile(_address);
+		::CloseHandle(_hMemMap);
+	}
+	else if (_address)
 		::FreeLibrary(_module);
 }
 
@@ -35,7 +50,7 @@ bool PEParser::IsValid() const {
 }
 
 bool PEParser::IsPe64() const {
-	return _opt32->Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC;
+	return _opt32 ? _opt32->Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC : IsObjectPe64();
 }
 
 bool PEParser::IsExecutable() const {
@@ -46,15 +61,15 @@ bool PEParser::IsExecutable() const {
 }
 
 bool PEParser::IsManaged() const {
-	return GetDataDirectory(IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR)->Size != 0;
+	return _opt32 ? GetDataDirectory(IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR)->Size != 0 : false;
 }
 
 bool PEParser::HasExports() const {
-	return GetDataDirectory(IMAGE_DIRECTORY_ENTRY_EXPORT)->VirtualAddress != 0;
+	return _opt32 ? GetDataDirectory(IMAGE_DIRECTORY_ENTRY_EXPORT)->VirtualAddress != 0 : false;
 }
 
 bool PEParser::HasImports() const {
-	return GetDataDirectory(IMAGE_DIRECTORY_ENTRY_IMPORT)->VirtualAddress != 0;
+	return _opt32 ? GetDataDirectory(IMAGE_DIRECTORY_ENTRY_IMPORT)->VirtualAddress != 0 : false;
 }
 
 int PEParser::GetSectionCount() const {
@@ -73,6 +88,9 @@ const IMAGE_SECTION_HEADER* PEParser::GetSectionHeader(ULONG section) const {
 
 
 const IMAGE_DATA_DIRECTORY* PEParser::GetDataDirectory(int index) const {
+	if (_opt32 == nullptr)	// object file
+		return nullptr;
+
 	if (!IsValid() || index < 0 || index > 15)
 		return nullptr;
 
@@ -238,19 +256,40 @@ CLRMetadataParser* PEParser::GetCLRParser() const {
 	return _clrParser.get();
 }
 
+bool PEParser::IsImportLib() const {
+	return _importLib;
+}
+
+bool PEParser::IsObjectFile() const {
+	return _opt32 == nullptr;
+}
+
+bool PEParser::IsObjectPe64() const {
+	return _fileHeader->Machine == IMAGE_FILE_MACHINE_AMD64 || _fileHeader->Machine == IMAGE_FILE_MACHINE_ARM64;
+}
+
 void PEParser::CheckValidity() {
+	if (::strncmp((PCSTR)_address, "!<arch>\n", 8) == 0) {
+		// LIB import library
+		_importLib = true;
+		return;
+	}
+
 	_dosHeader = reinterpret_cast<IMAGE_DOS_HEADER*>(_address);
-	if (_dosHeader->e_magic != IMAGE_DOS_SIGNATURE)
-		return;
-
-	auto ntHeader = (IMAGE_NT_HEADERS*)((PBYTE)_dosHeader + _dosHeader->e_lfanew);
-	if (ntHeader->Signature != IMAGE_NT_SIGNATURE)
-		return;
-	_fileHeader = &ntHeader->FileHeader;
-
-	_opt32 = (IMAGE_OPTIONAL_HEADER32*)&ntHeader->OptionalHeader;
-	_opt64 = (IMAGE_OPTIONAL_HEADER64*)&ntHeader->OptionalHeader;
-	_sections = IsPe64() ? (PIMAGE_SECTION_HEADER)(_opt64 + 1) : (PIMAGE_SECTION_HEADER)(_opt32 + 1);
+	if (_dosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
+		// perhaps object file / static library
+		_fileHeader = (IMAGE_FILE_HEADER*)_address;
+		_sections = (PIMAGE_SECTION_HEADER)(_fileHeader + 1);
+	}
+	else {
+		auto ntHeader = (IMAGE_NT_HEADERS*)((PBYTE)_dosHeader + _dosHeader->e_lfanew);
+		if (ntHeader->Signature != IMAGE_NT_SIGNATURE)
+			return;
+		_fileHeader = &ntHeader->FileHeader;
+		_opt32 = (IMAGE_OPTIONAL_HEADER32*)&ntHeader->OptionalHeader;
+		_opt64 = (IMAGE_OPTIONAL_HEADER64*)&ntHeader->OptionalHeader;
+		_sections = IsPe64() ? (PIMAGE_SECTION_HEADER)(_opt64 + 1) : (PIMAGE_SECTION_HEADER)(_opt32 + 1);
+	}
 	_valid = true;
 }
 

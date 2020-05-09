@@ -331,7 +331,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "PE Explorer v2.0 (C)2019-2020 Pavel Yosifovich"
+    IDR_MAINFRAME           "PE Explorer v2.0"
 END
 
 STRINGTABLE

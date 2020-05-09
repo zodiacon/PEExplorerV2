@@ -57,22 +57,28 @@ void CMainFrame::InitTree() {
 	m_tree.DeleteAllItems();
 
 	auto rootIcon = m_Parser->IsExecutable() ? 6 : 7;
+	auto objectFile = m_Parser->IsObjectFile();
+
 	auto root = InsertTreeItem(m_FileName, rootIcon, rootIcon, TreeNodeType::Root);
 	InsertTreeItem(L"Summary", 0, 0, TreeNodeType::Summary, root);
 	InsertTreeItem(L"Sections", 1, 1, TreeNodeType::Sections, root);
-	InsertTreeItem(L"Directories", 2, 2, TreeNodeType::Directories, root);
+	if(!objectFile)
+		InsertTreeItem(L"Directories", 2, 2, TreeNodeType::Directories, root);
 	if(m_Parser->HasExports())
 		InsertTreeItem(L"Exports", 3, 3, TreeNodeType::Exports, root);
 
 	if(m_Parser->HasImports())
 		InsertTreeItem(L"Imports", 4, 4, TreeNodeType::Imports, root);
-	InsertTreeItem(L"Resources", 5, 5, TreeNodeType::Resources, root);
+	if (!objectFile)
+		InsertTreeItem(L"Resources", 5, 5, TreeNodeType::Resources, root);
 	if(m_Parser->IsManaged())
 		InsertTreeItem(L".NET (CLR)", 11, 11, TreeNodeType::DotNet, root);
 	auto headers = InsertTreeItem(L"Headers", 8, 8, TreeNodeType::Headers, root);
-	InsertTreeItem(L"DOS_HEADER", 9, 9, TreeNodeType::ImageDosHeader, headers);
+	if (!objectFile)
+		InsertTreeItem(L"DOS_HEADER", 9, 9, TreeNodeType::ImageDosHeader, headers);
 	InsertTreeItem(L"FILE_HEADER", 9, 9, TreeNodeType::ImageFileHeader, headers);
-	InsertTreeItem(L"OPTIONAL_HEADER", 9, 9, TreeNodeType::ImageOptionalHeader, headers);
+	if (!objectFile)
+		InsertTreeItem(L"OPTIONAL_HEADER", 9, 9, TreeNodeType::ImageOptionalHeader, headers);
 	headers.Expand(TVE_EXPAND);
 
 	m_tree.Expand(root);
@@ -89,8 +95,8 @@ void CMainFrame::UpdateUI() {
 	UIEnable(ID_VIEW_SECTIONS, fileOpen);
 	UIEnable(ID_VIEW_EXPORTS, fileOpen && m_Parser->HasExports());
 	UIEnable(ID_VIEW_IMPORTS, fileOpen && m_Parser->HasImports());
-	UIEnable(ID_VIEW_RESOURCES, fileOpen);
-	UIEnable(ID_VIEW_DIRECTORIES, fileOpen);
+	UIEnable(ID_VIEW_RESOURCES, fileOpen && !m_Parser->IsObjectFile());
+	UIEnable(ID_VIEW_DIRECTORIES, fileOpen && !m_Parser->IsObjectFile());
 	UIEnable(ID_VIEW_DOTNET, fileOpen && m_Parser->IsManaged());
 }
 
@@ -198,8 +204,14 @@ bool CMainFrame::SwitchToTab(TreeNodeType type) {
 
 bool CMainFrame::DoFileOpen(PCWSTR path, bool newWindow) {
 	auto file = std::make_unique<PEParser>(path);
+	if (file->IsImportLib()) {
+		AtlMessageBox(*this, L"Import Library detected. PE Explorer is unable to parse such files",
+			IDR_MAINFRAME, MB_ICONWARNING);
+		return false;
+	}
+
 	if (!file->IsValid()) {
-		MessageBox(L"Error opening file.", L"PE Explorer", MB_ICONERROR);
+		AtlMessageBox(*this, L"Error opening file.", IDR_MAINFRAME, MB_ICONERROR);
 		return false;
 	}
 
@@ -330,6 +342,7 @@ LRESULT CMainFrame::OnWindowCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	DragAcceptFiles();
 	LoadSettings();
+	SetWindowText(L"PE Explorer v2.0 (C)2019-2020 Pavel Yosifovich");
 
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
@@ -651,7 +664,9 @@ CTreeItem CMainFrame::CreateHexView(TreeNodeType type, PCWSTR title, LPARAM para
 			DWORD bias = 0;
 			if (sectionView) {
 				auto section = m_Parser->GetSectionHeader(number);
-				buffer->SetData(0, (const BYTE*)m_Parser->GetAddress(section->VirtualAddress), section->Misc.VirtualSize);			
+				auto start = section->VirtualAddress ? section->VirtualAddress : section->PointerToRawData;
+				auto size = section->Misc.VirtualSize ? section->Misc.VirtualSize : section->SizeOfRawData;
+				buffer->SetData(0, (const BYTE*)m_Parser->GetAddress(start), size);			
 				bias = section->VirtualAddress;
 			}
 			else {

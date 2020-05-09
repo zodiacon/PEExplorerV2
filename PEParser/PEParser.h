@@ -257,7 +257,11 @@ public:
 	IMAGE_COR20_HEADER* GetCLRHeader() const;
 	CLRMetadataParser* GetCLRParser() const;
 
+	bool IsImportLib() const;
+	bool IsObjectFile() const;
+
 private:
+	bool IsObjectPe64() const;
 	void CheckValidity();
 	unsigned RvaToFileOffset(unsigned rva) const;
 	
@@ -268,6 +272,7 @@ private:
 
 	PBYTE _address{ nullptr };
 	HMODULE _module;
+	HANDLE _hMemMap{ nullptr };
 	IMAGE_DOS_HEADER* _dosHeader;
 	IMAGE_FILE_HEADER* _fileHeader;
 	IMAGE_SECTION_HEADER* _sections;
@@ -276,4 +281,5 @@ private:
 	CComPtr<IMetaDataImport> _spMetadata;
 	mutable std::unique_ptr<CLRMetadataParser> _clrParser;
 	bool _valid = false;
+	bool _importLib = false, _objectFile = false;
 };
