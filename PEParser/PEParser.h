@@ -40,6 +40,20 @@ enum class SubsystemType : short {
 	XBOX = 14
 };
 
+enum class CfgFlags : uint32_t {
+	CfInstrumented = 0x100,
+	CfwInstrumented = 0x200,
+	CfFunctionTablePresent = 0x400,
+	SecurityCookieUnused = 0x800,
+	ProtectDelayLoadIat = 0x1000,
+	DelayLoadIatInItsOwnSection = 0x2000,
+	CfExportSuppressionInfoPresent = 0x4000,
+	CfEnableExportSuppression = 0x8000,
+	CfLongJmpTablePresent = 0x10000,
+	CfFunctionTableSizeMask = 0xf0000000,
+};
+DEFINE_ENUM_FLAG_OPERATORS(CfgFlags);
+
 enum class DllCharacteristics : unsigned short {
 	None = 0,
 	HighEntropyVA = 0x20,
@@ -191,6 +205,63 @@ enum class ManagedMemberType {
 	StaticConstructor
 };
 
+struct ArchiveMemberHeader {
+	char Name[16];
+	char Date[12];
+	char UserID[6];
+	char GroupId[6];
+	char Mode[8];
+	char Size[10];
+	char EndOfHeader[2];
+};
+
+struct ImageLoadConfiguration {
+	DWORD      Size;
+	DWORD      TimeDateStamp;
+	WORD       MajorVersion;
+	WORD       MinorVersion;
+	DWORD      GlobalFlagsClear;
+	DWORD      GlobalFlagsSet;
+	DWORD      CriticalSectionDefaultTimeout;
+	ULONGLONG  DeCommitFreeBlockThreshold;
+	ULONGLONG  DeCommitTotalFreeThreshold;
+	ULONGLONG  LockPrefixTable;                // VA
+	ULONGLONG  MaximumAllocationSize;
+	ULONGLONG  VirtualMemoryThreshold;
+	ULONGLONG  ProcessAffinityMask;
+	DWORD      ProcessHeapFlags;
+	WORD       CSDVersion;
+	WORD       DependentLoadFlags;
+	ULONGLONG  EditList;                       // VA
+	ULONGLONG  SecurityCookie;                 // VA
+	ULONGLONG  SEHandlerTable;                 // VA
+	ULONGLONG  SEHandlerCount;
+	ULONGLONG  GuardCFCheckFunctionPointer;    // VA
+	ULONGLONG  GuardCFDispatchFunctionPointer; // VA
+	ULONGLONG  GuardCFFunctionTable;           // VA
+	ULONGLONG  GuardCFFunctionCount;
+	CfgFlags   GuardFlags;
+	IMAGE_LOAD_CONFIG_CODE_INTEGRITY CodeIntegrity;
+	ULONGLONG  GuardAddressTakenIatEntryTable; // VA
+	ULONGLONG  GuardAddressTakenIatEntryCount;
+	ULONGLONG  GuardLongJumpTargetTable;       // VA
+	ULONGLONG  GuardLongJumpTargetCount;
+	ULONGLONG  DynamicValueRelocTable;         // VA
+	ULONGLONG  CHPEMetadataPointer;            // VA
+	ULONGLONG  GuardRFFailureRoutine;          // VA
+	ULONGLONG  GuardRFFailureRoutineFunctionPointer; // VA
+	DWORD      DynamicValueRelocTableOffset;
+	WORD       DynamicValueRelocTableSection;
+	WORD       Reserved2;
+	ULONGLONG  GuardRFVerifyStackPointerFunctionPointer; // VA
+	DWORD      HotPatchTableOffset;
+	DWORD      Reserved3;
+	ULONGLONG  EnclaveConfigurationPointer;     // VA
+	ULONGLONG  VolatileMetadataPointer;         // VA
+	ULONGLONG  GuardEHContinuationTable;        // VA
+	ULONGLONG  GuardEHContinuationCount;
+};
+
 struct ManagedMember {
 	CString Name;
 	mdToken Token;
@@ -214,7 +285,7 @@ struct ManagedMember {
 			DWORD CPlusTypeFlag;
 		} Property;
 	};
-//	CString StringConst;
+	//	CString StringConst;
 };
 
 class PEParser final {
@@ -233,6 +304,7 @@ public:
 	const IMAGE_SECTION_HEADER* GetSectionHeader(ULONG section) const;
 	const IMAGE_DATA_DIRECTORY* GetDataDirectory(int index) const;
 	const IMAGE_DOS_HEADER& GetDosHeader() const;
+	void* GetBaseAddress() const;
 
 	CString GetSectionName(ULONG section) const;
 
@@ -243,19 +315,24 @@ public:
 	bool GetImportAddressTable() const;
 	bool IsCLRMetadataAvailable() const;
 
+	std::vector<ULONG> GetTlsInfo() const;
+
 	void* GetAddress(unsigned rva) const;
 
 	SubsystemType GetSubsystemType() const;
 
-	IMAGE_OPTIONAL_HEADER32& GetOptionalHeader32() const {
-		return *_opt32;
-	}
 	IMAGE_OPTIONAL_HEADER64& GetOptionalHeader64() const {
 		return *_opt64;
 	}
 
+	IMAGE_OPTIONAL_HEADER32& GetOptionalHeader32() const {
+		return *_opt32;
+	}
+
 	IMAGE_COR20_HEADER* GetCLRHeader() const;
 	CLRMetadataParser* GetCLRParser() const;
+	std::vector<std::pair<DWORD, WIN_CERTIFICATE>> EnumCertificates() const;
+	void* GetConfigurationInfo() const;
 
 	bool IsImportLib() const;
 	bool IsObjectFile() const;
@@ -264,21 +341,25 @@ private:
 	bool IsObjectPe64() const;
 	void CheckValidity();
 	unsigned RvaToFileOffset(unsigned rva) const;
-	
+
 	//void ParseResourceDirectoryEntry(IMAGE_RESOURCE_DIRECTORY_ENTRY* entry, void* root, const CString& parent, IResourceCallback*) const;
 	//void ParseResourceDirectory(IMAGE_RESOURCE_DIRECTORY* dir, void* root, const CString& parent, IResourceCallback*) const;
 
 	CString GetResourceName(void* data) const;
 
 	PBYTE _address{ nullptr };
-	HMODULE _module;
+	HMODULE _module{ nullptr };
 	HANDLE _hMemMap{ nullptr };
 	IMAGE_DOS_HEADER* _dosHeader;
 	IMAGE_FILE_HEADER* _fileHeader;
 	IMAGE_SECTION_HEADER* _sections;
 	IMAGE_OPTIONAL_HEADER32* _opt32{ nullptr };
 	IMAGE_OPTIONAL_HEADER64* _opt64{ nullptr };
+	PLOADED_IMAGE _image;
+	LOADED_IMAGE _ximage;
 	CComPtr<IMetaDataImport> _spMetadata;
+	std::wstring _path;
+	mutable HMODULE _resModule{ nullptr };
 	mutable std::unique_ptr<CLRMetadataParser> _clrParser;
 	bool _valid = false;
 	bool _importLib = false, _objectFile = false;

@@ -98,6 +98,8 @@ void CMainFrame::UpdateUI() {
 	UIEnable(ID_VIEW_RESOURCES, fileOpen && !m_Parser->IsObjectFile());
 	UIEnable(ID_VIEW_DIRECTORIES, fileOpen && !m_Parser->IsObjectFile());
 	UIEnable(ID_VIEW_DOTNET, fileOpen && m_Parser->IsManaged());
+	UIEnable(ID_WINDOW_CLOSE, m_view.GetPageCount() > 0);
+	UIEnable(ID_WINDOW_CLOSEALL, m_view.GetPageCount() > 0);
 }
 
 void CMainFrame::CreateNewTab(TreeNodeType type) {
@@ -215,6 +217,8 @@ bool CMainFrame::DoFileOpen(PCWSTR path, bool newWindow) {
 		return false;
 	}
 
+	auto config = (PIMAGE_LOAD_CONFIG_DIRECTORY64)file->GetConfigurationInfo();
+
 	if (!newWindow) {
 		m_Parser = std::move(file);
 		m_FilePath = path;
@@ -263,7 +267,7 @@ void CMainFrame::AddToRecentFiles(PCWSTR file) {
 	}
 	else {
 		m_RecentFiles.insert(m_RecentFiles.begin(), file);
-		if (m_RecentFiles.size() > 15)
+		if (m_RecentFiles.size() > 20)
 			m_RecentFiles.pop_back();
 	}
 
@@ -665,8 +669,8 @@ CTreeItem CMainFrame::CreateHexView(TreeNodeType type, PCWSTR title, LPARAM para
 			if (sectionView) {
 				auto section = m_Parser->GetSectionHeader(number);
 				auto start = section->VirtualAddress ? section->VirtualAddress : section->PointerToRawData;
-				auto size = section->Misc.VirtualSize ? section->Misc.VirtualSize : section->SizeOfRawData;
-				buffer->SetData(0, (const BYTE*)m_Parser->GetAddress(start), size);			
+				auto size = min(section->Misc.VirtualSize, section->SizeOfRawData);		
+				buffer->SetData(0, (const BYTE*)m_Parser->GetAddress(start), size);
 				bias = section->VirtualAddress;
 			}
 			else {

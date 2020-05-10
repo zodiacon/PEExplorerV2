@@ -7,9 +7,9 @@
 
 #pragma comment(lib, "imagehlp")
 
-PEParser::PEParser(const wchar_t* path) {
-	_module = ::LoadLibraryEx(path, nullptr, LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE);
-	if (_module == nullptr) {
+PEParser::PEParser(const wchar_t* path) : _path(path) {
+	USES_CONVERSION;
+	if(!::MapAndLoad(W2CA(path), nullptr, &_ximage, FALSE, TRUE)) {
 		auto hFile = ::CreateFile(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
 		if (hFile == INVALID_HANDLE_VALUE)
 			return;
@@ -23,7 +23,8 @@ PEParser::PEParser(const wchar_t* path) {
 			return;
 	}
 	else {
-		_address = (PBYTE)(((ULONG_PTR)_module) & ~0xf);
+		_image = &_ximage;
+		_address = _image->MappedAddress;
 	}
 	CheckValidity();
 	if (IsValid() && IsManaged()) {
@@ -37,12 +38,14 @@ PEParser::PEParser(const wchar_t* path) {
 }
 
 PEParser::~PEParser() {
+	if (_resModule)
+		::FreeLibrary(_resModule);
 	if (_hMemMap) {
 		::UnmapViewOfFile(_address);
 		::CloseHandle(_hMemMap);
 	}
-	else if (_address)
-		::FreeLibrary(_module);
+	else if (_image)
+		::UnMapAndLoad(_image);
 }
 
 bool PEParser::IsValid() const {
@@ -50,7 +53,7 @@ bool PEParser::IsValid() const {
 }
 
 bool PEParser::IsPe64() const {
-	return _opt32 ? _opt32->Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC : IsObjectPe64();
+	return _opt64 ? _opt64->Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC : IsObjectPe64();
 }
 
 bool PEParser::IsExecutable() const {
@@ -61,15 +64,15 @@ bool PEParser::IsExecutable() const {
 }
 
 bool PEParser::IsManaged() const {
-	return _opt32 ? GetDataDirectory(IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR)->Size != 0 : false;
+	return _opt64 ? GetDataDirectory(IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR)->Size != 0 : false;
 }
 
 bool PEParser::HasExports() const {
-	return _opt32 ? GetDataDirectory(IMAGE_DIRECTORY_ENTRY_EXPORT)->VirtualAddress != 0 : false;
+	return _opt64 ? GetDataDirectory(IMAGE_DIRECTORY_ENTRY_EXPORT)->VirtualAddress != 0 : false;
 }
 
 bool PEParser::HasImports() const {
-	return _opt32 ? GetDataDirectory(IMAGE_DIRECTORY_ENTRY_IMPORT)->VirtualAddress != 0 : false;
+	return _opt64 ? GetDataDirectory(IMAGE_DIRECTORY_ENTRY_IMPORT)->VirtualAddress != 0 : false;
 }
 
 int PEParser::GetSectionCount() const {
@@ -88,19 +91,21 @@ const IMAGE_SECTION_HEADER* PEParser::GetSectionHeader(ULONG section) const {
 
 
 const IMAGE_DATA_DIRECTORY* PEParser::GetDataDirectory(int index) const {
-	if (_opt32 == nullptr)	// object file
+	if (_opt64 == nullptr)	// object file
 		return nullptr;
 
 	if (!IsValid() || index < 0 || index > 15)
 		return nullptr;
 
-	if (IsPe64())
-		return &GetOptionalHeader64().DataDirectory[index];
-	return &GetOptionalHeader32().DataDirectory[index];
+	return IsPe64() ? &_opt64->DataDirectory[index] : &_opt32->DataDirectory[index];
 }
 
 const IMAGE_DOS_HEADER& PEParser::GetDosHeader() const {
 	return *_dosHeader;
+}
+
+void* PEParser::GetBaseAddress() const {
+	return _address;
 }
 
 CString PEParser::GetSectionName(ULONG section) const {
@@ -230,12 +235,11 @@ void* PEParser::GetAddress(unsigned rva) const {
 	if (!IsValid())
 		return nullptr;
 
-	return _address + rva;
-
+	return ::ImageRvaToVa(::ImageNtHeader(_address), _address, rva, nullptr);
 }
 
 SubsystemType PEParser::GetSubsystemType() const {
-	return static_cast<SubsystemType>(IsPe64() ? GetOptionalHeader64().Subsystem : GetOptionalHeader32().Subsystem);
+	return static_cast<SubsystemType>(GetOptionalHeader64().Subsystem);
 }
 
 IMAGE_COR20_HEADER* PEParser::GetCLRHeader() const {
@@ -256,16 +260,46 @@ CLRMetadataParser* PEParser::GetCLRParser() const {
 	return _clrParser.get();
 }
 
+void* PEParser::GetConfigurationInfo() const {
+	auto dir = GetDataDirectory(IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG);
+	if (dir->Size == 0)
+		return nullptr;
+
+	return GetAddress(dir->VirtualAddress);
+}
+
+std::vector<std::pair<DWORD, WIN_CERTIFICATE>> PEParser::EnumCertificates() const {
+	std::vector<std::pair<DWORD, WIN_CERTIFICATE>> certs;
+	DWORD count;
+	DWORD indices[64];
+	if (!::ImageEnumerateCertificates(_image->hFile, CERT_SECTION_TYPE_ANY, &count, indices, _countof(indices)))
+		return certs;
+
+	if (count == 0)
+		return certs;
+
+	certs.reserve(count);
+	WIN_CERTIFICATE wc;
+	for (DWORD i = 0; i < count; i++) {
+		if (!::ImageGetCertificateHeader(_image->hFile, indices[i], &wc))
+			continue;
+		certs.push_back({ indices[i], wc });
+	}
+
+	return certs;
+}
+
 bool PEParser::IsImportLib() const {
 	return _importLib;
 }
 
 bool PEParser::IsObjectFile() const {
-	return _opt32 == nullptr;
+	return _opt64 == nullptr;
 }
 
 bool PEParser::IsObjectPe64() const {
-	return _fileHeader->Machine == IMAGE_FILE_MACHINE_AMD64 || _fileHeader->Machine == IMAGE_FILE_MACHINE_ARM64;
+	auto machine = _fileHeader->Machine;
+	return machine == IMAGE_FILE_MACHINE_AMD64 || machine == IMAGE_FILE_MACHINE_ARM64 || machine == IMAGE_FILE_MACHINE_IA64;
 }
 
 void PEParser::CheckValidity() {
@@ -282,13 +316,14 @@ void PEParser::CheckValidity() {
 		_sections = (PIMAGE_SECTION_HEADER)(_fileHeader + 1);
 	}
 	else {
-		auto ntHeader = (IMAGE_NT_HEADERS*)((PBYTE)_dosHeader + _dosHeader->e_lfanew);
+		ATLASSERT(_image);
+		auto ntHeader = _image->FileHeader;
 		if (ntHeader->Signature != IMAGE_NT_SIGNATURE)
 			return;
 		_fileHeader = &ntHeader->FileHeader;
-		_opt32 = (IMAGE_OPTIONAL_HEADER32*)&ntHeader->OptionalHeader;
-		_opt64 = (IMAGE_OPTIONAL_HEADER64*)&ntHeader->OptionalHeader;
-		_sections = IsPe64() ? (PIMAGE_SECTION_HEADER)(_opt64 + 1) : (PIMAGE_SECTION_HEADER)(_opt32 + 1);
+		_opt64 = &_image->FileHeader->OptionalHeader;
+		_opt32 = (PIMAGE_OPTIONAL_HEADER32)&_image->FileHeader->OptionalHeader;
+		_sections = _image->Sections;
 	}
 	_valid = true;
 }
@@ -354,11 +389,16 @@ std::vector<ResourceType> PEParser::EnumResources() const {
 		ResourceType* Current;
 	} context;
 
-	context.Module = (HMODULE)(_address + 2);
+	if(_resModule == nullptr)
+		_resModule = ::LoadLibraryEx(_path.c_str(), nullptr, LOAD_LIBRARY_AS_IMAGE_RESOURCE | LOAD_LIBRARY_AS_DATAFILE);
+	if (_resModule == nullptr)
+		return types;
+
+	context.Module = _resModule;
 	context.Types = &types;
 	context.Current = nullptr;
 
-	::EnumResourceTypes(context.Module, [](auto h, auto type, auto p) {
+	::EnumResourceTypes(_resModule, [](auto h, auto type, auto p) {
 		auto context = reinterpret_cast<Context*>(p);
 		ResourceType rt;
 		if ((ULONG_PTR)type < 0x10000) {
@@ -411,4 +451,17 @@ bool PEParser::GetImportAddressTable() const {
 
 bool PEParser::IsCLRMetadataAvailable() const {
 	return _spMetadata;
+}
+
+std::vector<ULONG> PEParser::GetTlsInfo() const {
+	std::vector<ULONG> tls;
+
+	auto dir = GetDataDirectory(IMAGE_DIRECTORY_ENTRY_TLS);
+	if (dir->Size == 0)
+		return tls;
+
+	auto data64 = (IMAGE_TLS_DIRECTORY64*)GetAddress(dir->VirtualAddress);
+	
+
+	return std::vector<ULONG>();
 }
