@@ -260,12 +260,30 @@ CLRMetadataParser* PEParser::GetCLRParser() const {
 	return _clrParser.get();
 }
 
-void* PEParser::GetConfigurationInfo() const {
+const IMAGE_LOAD_CONFIG_DIRECTORY64* PEParser::GetLoadConfiguration64() const {
+	if (!IsPe64())
+		return nullptr;
+
 	auto dir = GetDataDirectory(IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG);
 	if (dir->Size == 0)
 		return nullptr;
 
-	return GetAddress(dir->VirtualAddress);
+	return (const IMAGE_LOAD_CONFIG_DIRECTORY64*)GetAddress(dir->VirtualAddress);
+}
+
+const IMAGE_LOAD_CONFIG_DIRECTORY32* PEParser::GetLoadConfiguration32() const {
+	if (IsPe64())
+		return nullptr;
+
+	auto dir = GetDataDirectory(IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG);
+	if (dir->Size == 0)
+		return nullptr;
+
+	return (const IMAGE_LOAD_CONFIG_DIRECTORY32*)GetAddress(dir->VirtualAddress);
+}
+
+PVOID PEParser::GetDataDirectoryAddress(UINT index, PULONG size) const {
+	return ::ImageDirectoryEntryToData(_address, FALSE, index, size);
 }
 
 std::vector<std::pair<DWORD, WIN_CERTIFICATE>> PEParser::EnumCertificates() const {

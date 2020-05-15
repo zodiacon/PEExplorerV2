@@ -217,8 +217,6 @@ bool CMainFrame::DoFileOpen(PCWSTR path, bool newWindow) {
 		return false;
 	}
 
-	auto config = (PIMAGE_LOAD_CONFIG_DIRECTORY64)file->GetConfigurationInfo();
-
 	if (!newWindow) {
 		m_Parser = std::move(file);
 		m_FilePath = path;
@@ -346,7 +344,10 @@ LRESULT CMainFrame::OnWindowCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	DragAcceptFiles();
 	LoadSettings();
-	SetWindowText(L"PE Explorer v2.0 (C)2019-2020 Pavel Yosifovich");
+	CString title, copyright;
+	title.LoadStringW(IDR_MAINFRAME);
+	copyright.LoadStringW(IDS_COPYRIGHT);
+	SetWindowText(title + L" " + copyright);
 
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
@@ -372,7 +373,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		{ ID_FILE_CLOSE, IDI_CLOSE },
 		{ ID_WINDOW_CLOSE, IDI_DELETE },
 	};
-	for (auto& cmd : cmds)
+	for (const auto& cmd : cmds)
 		m_CmdBar.AddIcon(AtlLoadIcon(cmd.icon), cmd.id);
 
 	CToolBarCtrl tb;
@@ -674,10 +675,11 @@ CTreeItem CMainFrame::CreateHexView(TreeNodeType type, PCWSTR title, LPARAM para
 				bias = section->VirtualAddress;
 			}
 			else {
-				auto dir = m_Parser->GetDataDirectory(number);
-				ATLASSERT(dir);
-				buffer->SetData(0, (const BYTE*) m_Parser->GetAddress(dir->VirtualAddress), dir->Size);
-				bias = dir->VirtualAddress;
+				ULONG size;
+				auto address = m_Parser->GetDataDirectoryAddress(number, &size);
+				ATLASSERT(address);
+				buffer->SetData(0, (const BYTE*)address, size);
+				bias = m_Parser->GetDataDirectory(number)->VirtualAddress;
 			}
 			int image = sectionView ? 1 : 2;
 			auto node = m_TreeNodes[int(sectionView ? TreeNodeType::Sections : TreeNodeType::Directories)]

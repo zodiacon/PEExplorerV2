@@ -215,53 +215,6 @@ struct ArchiveMemberHeader {
 	char EndOfHeader[2];
 };
 
-struct ImageLoadConfiguration {
-	DWORD      Size;
-	DWORD      TimeDateStamp;
-	WORD       MajorVersion;
-	WORD       MinorVersion;
-	DWORD      GlobalFlagsClear;
-	DWORD      GlobalFlagsSet;
-	DWORD      CriticalSectionDefaultTimeout;
-	ULONGLONG  DeCommitFreeBlockThreshold;
-	ULONGLONG  DeCommitTotalFreeThreshold;
-	ULONGLONG  LockPrefixTable;                // VA
-	ULONGLONG  MaximumAllocationSize;
-	ULONGLONG  VirtualMemoryThreshold;
-	ULONGLONG  ProcessAffinityMask;
-	DWORD      ProcessHeapFlags;
-	WORD       CSDVersion;
-	WORD       DependentLoadFlags;
-	ULONGLONG  EditList;                       // VA
-	ULONGLONG  SecurityCookie;                 // VA
-	ULONGLONG  SEHandlerTable;                 // VA
-	ULONGLONG  SEHandlerCount;
-	ULONGLONG  GuardCFCheckFunctionPointer;    // VA
-	ULONGLONG  GuardCFDispatchFunctionPointer; // VA
-	ULONGLONG  GuardCFFunctionTable;           // VA
-	ULONGLONG  GuardCFFunctionCount;
-	CfgFlags   GuardFlags;
-	IMAGE_LOAD_CONFIG_CODE_INTEGRITY CodeIntegrity;
-	ULONGLONG  GuardAddressTakenIatEntryTable; // VA
-	ULONGLONG  GuardAddressTakenIatEntryCount;
-	ULONGLONG  GuardLongJumpTargetTable;       // VA
-	ULONGLONG  GuardLongJumpTargetCount;
-	ULONGLONG  DynamicValueRelocTable;         // VA
-	ULONGLONG  CHPEMetadataPointer;            // VA
-	ULONGLONG  GuardRFFailureRoutine;          // VA
-	ULONGLONG  GuardRFFailureRoutineFunctionPointer; // VA
-	DWORD      DynamicValueRelocTableOffset;
-	WORD       DynamicValueRelocTableSection;
-	WORD       Reserved2;
-	ULONGLONG  GuardRFVerifyStackPointerFunctionPointer; // VA
-	DWORD      HotPatchTableOffset;
-	DWORD      Reserved3;
-	ULONGLONG  EnclaveConfigurationPointer;     // VA
-	ULONGLONG  VolatileMetadataPointer;         // VA
-	ULONGLONG  GuardEHContinuationTable;        // VA
-	ULONGLONG  GuardEHContinuationCount;
-};
-
 struct ManagedMember {
 	CString Name;
 	mdToken Token;
@@ -332,7 +285,9 @@ public:
 	IMAGE_COR20_HEADER* GetCLRHeader() const;
 	CLRMetadataParser* GetCLRParser() const;
 	std::vector<std::pair<DWORD, WIN_CERTIFICATE>> EnumCertificates() const;
-	void* GetConfigurationInfo() const;
+	const IMAGE_LOAD_CONFIG_DIRECTORY64* GetLoadConfiguration64() const;
+	const IMAGE_LOAD_CONFIG_DIRECTORY32* GetLoadConfiguration32() const;
+	PVOID GetDataDirectoryAddress(UINT index, PULONG size) const;
 
 	bool IsImportLib() const;
 	bool IsObjectFile() const;

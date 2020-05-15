@@ -5,6 +5,7 @@
 #define IDD_ABOUTBOX                    100
 #define ID_FILE_EXPORT                  101
 #define IDR_MAINFRAME                   128
+#define IDS_COPYRIGHT                   129
 #define IDI_CLOSE                       202
 #define IDI_COPY                        203
 #define IDI_EXPORTS                     204
@@ -52,7 +53,6 @@
 #define IDI_PROPERTY                    243
 #define IDI_FIELD                       244
 #define IDI_CCTOR                       245
-#define IDI_ICON4                       246
 #define IDI_CTOR                        246
 #define ID_VIEW_TREEPANE                32774
 #define ID_OPTIONS_ALWAYSONTOP          32775
