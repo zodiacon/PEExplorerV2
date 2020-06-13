@@ -19,7 +19,7 @@ PCWSTR PEStrings::SubsystemTypeToString(SubsystemType type) {
 		case SubsystemType::EfiROM: return L"EFI ROM";
 		case SubsystemType::XBOX: return L"XBOX";
 	}
-	return L"Unknown";
+	return L"(Unknown)";
 }
 
 CString PEStrings::GetFileName(const CString& path) {
@@ -64,67 +64,64 @@ CString PEStrings::Sec1970ToString(DWORD secs) {
 	return CTime(secs).Format(L"%X");
 }
 
-CString PEStrings::CharacteristicsToString(ImageCharacteristics ch) {
+CString PEStrings::CharacteristicsToString(ImageCharacteristics ic) {
 	CString result;
 
-	if ((ch & ImageCharacteristics::RelocsStripped) != ImageCharacteristics::None)
-		result += L"Relocations Stripped, ";
-	if ((ch & ImageCharacteristics::ExecutableImage) != ImageCharacteristics::None)
-		result += L"Executable Image, ";
-	if ((ch & ImageCharacteristics::LineNumsStripped) != ImageCharacteristics::None)
-		result += L"Line Numbers Stripped, ";
-	if ((ch & ImageCharacteristics::LocalSymbolsStripped) != ImageCharacteristics::None)
-		result += L"Local Symbols Stripped, ";
-	if ((ch & ImageCharacteristics::DllFile) != ImageCharacteristics::None)
-		result += L"Dll File, ";
-	if ((ch & ImageCharacteristics::AggressiveTrimWorkingSet) != ImageCharacteristics::None)
-		result += L"Aggressive Trim Working Set, ";
-	if ((ch & ImageCharacteristics::LargeAddressAware) != ImageCharacteristics::None)
-		result += L"Large Address Aware, ";
-	if ((ch & ImageCharacteristics::LittleEndian) != ImageCharacteristics::None)
-		result += L"Little Endian, ";
-	if ((ch & ImageCharacteristics::Machine32Bit) != ImageCharacteristics::None)
-		result += L"32 bit Machine, ";
-	if ((ch & ImageCharacteristics::DebugInfoStripped) != ImageCharacteristics::None)
-		result += L"Debug Info Stripped, ";
-	if ((ch & ImageCharacteristics::RemovableRunFromSwap) != ImageCharacteristics::None)
-		result += L"Removable Run from Swap, ";
-	if ((ch & ImageCharacteristics::NetRunFromSwap) != ImageCharacteristics::None)
-		result += L"Net Run from Swap, ";
-	if ((ch & ImageCharacteristics::SingleCpuOnly) != ImageCharacteristics::None)
-		result += L"Single CPU Only, ";
-	if ((ch & ImageCharacteristics::BigEndian) != ImageCharacteristics::None)
-		result += L"Big Endian, ";
+	static const struct {
+		ImageCharacteristics cs;
+		PCWSTR text;
+	} chars[] = {
+		{ ImageCharacteristics::RelocsStripped, L"Relocations Stripped" },
+		{ ImageCharacteristics::ExecutableImage, L"Executable Image" },
+		{ ImageCharacteristics::AggressiveTrimWorkingSet, L"Aggressive Trim Working Set" },
+		{ ImageCharacteristics::BigEndian, L"Big Endian" },
+		{ ImageCharacteristics::LargeAddressAware, L"Large Address Aware" },
+		{ ImageCharacteristics::DebugInfoStripped, L"Debug Info Stripped" },
+		{ ImageCharacteristics::LineNumsStripped, L"Line Numbers Stripped" },
+		{ ImageCharacteristics::DllFile, L"DLL File" },
+		{ ImageCharacteristics::LittleEndian, L"Little Endian" },
+		{ ImageCharacteristics::Machine32Bit, L"32-Bit Machine" },
+		{ ImageCharacteristics::LocalSymbolsStripped, L"Local Symbols Stripped" },
+		{ ImageCharacteristics::NetRunFromSwap, L"Net Run from Swap" },
+		{ ImageCharacteristics::RemovableRunFromSwap, L"Removable Run from Swap" },
+		{ ImageCharacteristics::SingleCpuOnly, L"Single CPU Only" },
+		{ ImageCharacteristics::SystemFile, L"System File" },
+	};
+
+	for (auto& ch : chars) {
+		if ((ch.cs & ic) == ch.cs)
+			result += CString(ch.text) + L", ";
+	}
 
 	if (!result.IsEmpty())
 		result = result.Left(result.GetLength() - 2);
 	return result;
 }
 
-CString PEStrings::DllCharacteristicsToString(DllCharacteristics ch) {
+CString PEStrings::DllCharacteristicsToString(DllCharacteristics dc) {
 	CString result;
-	if ((ch & DllCharacteristics::HighEntropyVA) != DllCharacteristics::None)
-		result += L"High Entropy VA, ";
-	if ((ch & DllCharacteristics::DynamicBase) != DllCharacteristics::None)
-		result += L"Dynamic Base, ";
-	if ((ch & DllCharacteristics::ForceIntegrity) != DllCharacteristics::None)
-		result += L"Force Integrity, ";
-	if ((ch & DllCharacteristics::NxCompat) != DllCharacteristics::None)
-		result += L"NX Compat, ";
-	if ((ch & DllCharacteristics::NoIsolation) != DllCharacteristics::None)
-		result += L"No Isolation, ";
-	if ((ch & DllCharacteristics::NoSEH) != DllCharacteristics::None)
-		result += L"No SEH, ";
-	if ((ch & DllCharacteristics::NoBind) != DllCharacteristics::None)
-		result += L"No Bind, ";
-	if ((ch & DllCharacteristics::AppContainer) != DllCharacteristics::None)
-		result += L"App Container, ";
-	if ((ch & DllCharacteristics::WDMDriver) != DllCharacteristics::None)
-		result += L"WDM Driver, ";
-	if ((ch & DllCharacteristics::ControlFlowGuard) != DllCharacteristics::None)
-		result += L"Control Flow Guard, ";
-	if ((ch & DllCharacteristics::TerminalServerAware) != DllCharacteristics::None)
-		result += L"Terminal Server Aware, ";
+
+	static const struct {
+		DllCharacteristics cs;
+		PCWSTR text;
+	} chars[] = {
+		{ DllCharacteristics::AppContainer, L"App Container" },
+		{ DllCharacteristics::HighEntropyVA, L"High Entropy VA" },
+		{ DllCharacteristics::DynamicBase, L"Dynamic Base" },
+		{ DllCharacteristics::ForceIntegrity, L"Force Integrity" },
+		{ DllCharacteristics::NxCompat, L"NX Compat" },
+		{ DllCharacteristics::ControlFlowGuard, L"Control Flow Guard" },
+		{ DllCharacteristics::NoBind, L"No Bind" },
+		{ DllCharacteristics::WDMDriver, L"WDM Driver" },
+		{ DllCharacteristics::NoIsolation, L"No Isolation" },
+		{ DllCharacteristics::TerminalServerAware, L"Terminal Server Aware" },
+		{ DllCharacteristics::NoSEH, L"No SEH" },
+	};
+
+	for (auto& ch : chars) {
+		if ((ch.cs & dc) == ch.cs)
+			result += CString(ch.text) + L", ";
+	}
 
 	if (!result.IsEmpty())
 		result = result.Left(result.GetLength() - 2);
