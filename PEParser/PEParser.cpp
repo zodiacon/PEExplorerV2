@@ -150,7 +150,7 @@ std::vector<ExportedSymbol> PEParser::GetExports() const {
 		}
 
 		if (ordinals) {
-			symbol.Ordinal = *(USHORT*)(ordinals + i * 2);
+			symbol.Ordinal = *(USHORT*)(ordinals + i * 2) + ordinalBase;
 		}
 		else {
 			symbol.Ordinal = 0xffff;

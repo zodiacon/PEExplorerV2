@@ -167,7 +167,7 @@ PCWSTR PEStrings::ResourceTypeToString(WORD id) {
 	return id >= _countof(types) ? nullptr : types[id];
 }
 
-CString PEStrings::FormatInstruction(cs_insn& inst) {
+CString PEStrings::FormatInstruction(const cs_insn& inst) {
 	CStringA text;
 	text.Format("%llX %-10s %s", inst.address, inst.mnemonic, inst.op_str);
 	return CString(text);

@@ -14,7 +14,7 @@ LRESULT CAssemblyView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 
 	CString text;
 	for (int j = 0; j < m_Count; j++) {
-		auto& inst = m_Inst[j];
+		const auto& inst = m_Inst[j];
 		text += PEStrings::FormatInstruction(inst) + L"\r\n";
 		if (_stricmp(inst.mnemonic, "ret") == 0 || inst.bytes[0] == 0xcc)
 			break;

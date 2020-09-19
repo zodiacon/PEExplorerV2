@@ -22,7 +22,7 @@ void ImageDosHeaderStruct::BuildMembers() {
 	auto& header = _parser->GetDosHeader();
 
 	_members = std::vector<MemberInfo>{
-		MemberInfo(L"e_magic",		 0,	L"WORD", sizeof(WORD), PEStrings::ToDecAndHex(header.e_magic)),
+		MemberInfo(L"e_magic",		 0,	L"WORD", sizeof(WORD), PEStrings::ToDecAndHex(header.e_magic), L"Magic ('MZ')"),
 		MemberInfo(L"e_cblp",		 2,	L"WORD", sizeof(WORD), PEStrings::ToDecAndHex(header.e_cblp)),
 		MemberInfo(L"e_cp",			 4,	L"WORD", sizeof(WORD), PEStrings::ToDecAndHex(header.e_cp)),
 		MemberInfo(L"e_crlc",		 6, L"WORD", sizeof(WORD), PEStrings::ToDecAndHex(header.e_crlc)),
@@ -40,6 +40,6 @@ void ImageDosHeaderStruct::BuildMembers() {
 		MemberInfo(L"e_oemid",		36, L"WORD", sizeof(WORD), PEStrings::ToDecAndHex(header.e_oemid)),
 		MemberInfo(L"e_oeminfo",	38, L"WORD", sizeof(WORD), PEStrings::ToDecAndHex(header.e_oeminfo)),
 		MemberInfo(L"e_res2[10]",	40, L"WORD", sizeof(WORD[10]), L""),
-		MemberInfo(L"e_lfanew",		60, L"LONG", sizeof(LONG), PEStrings::ToDecAndHex(header.e_lfanew)),
+		MemberInfo(L"e_lfanew",		60, L"LONG", sizeof(LONG), PEStrings::ToDecAndHex(header.e_lfanew), L"Offset to Image file header"),
 	};
 }
