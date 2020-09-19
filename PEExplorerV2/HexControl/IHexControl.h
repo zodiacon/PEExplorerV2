@@ -1,13 +1,10 @@
 #pragma once
 
-struct IBufferManager {
-	virtual size_t GetData(int64_t offset, uint8_t* buffer, size_t count) = 0;
-	virtual void Insert(int64_t offset, const uint8_t* data, size_t count) = 0;
-	virtual void Delete(int64_t offset, size_t count) = 0;
-	virtual void SetData(int64_t offset, const uint8_t* data, size_t count) = 0;
-	virtual int64_t GetSize() const = 0;
-	virtual uint8_t* GetRawData(int64_t offset) = 0;
-	virtual ~IBufferManager() = default;
+struct IBufferManager;
+
+struct HexControlNotifyData {
+	NMHDR hdr;
+	POINT pt;
 };
 
 struct IHexControl {

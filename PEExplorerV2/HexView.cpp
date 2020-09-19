@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "HexView.h"
 #include "resource.h"
+#include "HexControl/IBufferManager.h"
 
 CHexView::CHexView(std::unique_ptr<IBufferManager> buffer, CTreeItem treeItem) 
 	: m_buffer(std::move(buffer)), m_treeItem(treeItem) {
@@ -25,7 +26,7 @@ bool CHexView::DoExport(PCWSTR filename) const {
 }
 
 LRESULT CHexView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
-	m_hex.Create(*this, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+	m_hex.Create(*this, rcDefault);
 	m_hex.SetBufferManager(m_buffer.get());
 	m_hex.SetReadOnly(true);
 

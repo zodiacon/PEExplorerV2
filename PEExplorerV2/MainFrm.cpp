@@ -665,7 +665,7 @@ CTreeItem CMainFrame::CreateHexView(TreeNodeType type, PCWSTR title, LPARAM para
 				return it->second;
 			}
 
-			std::unique_ptr<IBufferManager> buffer = std::make_unique<InMemoryBuffer>();
+			std::unique_ptr<IBufferManager> buffer = std::make_unique<InMemoryBuffer>(0);
 			DWORD bias = 0;
 			if (sectionView) {
 				auto section = m_Parser->GetSectionHeader(number);

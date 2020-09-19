@@ -30,6 +30,7 @@ private:
 	CSplitterWindow m_splitter;
 	CGenericListView m_resView;
 	CHexView m_hexView;
+	int m_SelectedIndex{ -1 };
 	ResourcesView m_resViewImpl;
 	std::unique_ptr<IBufferManager> m_buffer;
 };
