@@ -58,7 +58,7 @@ extern "C" {
 // Capstone package version
 #define CS_VERSION_MAJOR CS_API_MAJOR
 #define CS_VERSION_MINOR CS_API_MINOR
-#define CS_VERSION_EXTRA 1
+#define CS_VERSION_EXTRA 2
 
 /// Macro to create combined version which can be compared to
 /// result of cs_version() API.
@@ -373,7 +373,7 @@ typedef enum cs_err {
 	CS_ERR_SKIPDATA, ///< Access irrelevant data for "data" instruction in SKIPDATA mode
 	CS_ERR_X86_ATT,  ///< X86 AT&T syntax is unsupported (opt-out at compile time)
 	CS_ERR_X86_INTEL, ///< X86 Intel syntax is unsupported (opt-out at compile time)
-	CS_ERR_X86_MASM, ///< X86 Intel syntax is unsupported (opt-out at compile time)
+	CS_ERR_X86_MASM, ///< X86 Masm syntax is unsupported (opt-out at compile time)
 } cs_err;
 
 /**

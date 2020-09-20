@@ -13,6 +13,7 @@ struct ExportedSymbol {
 	std::string ForwardName;
 	DWORD Address;
 	unsigned short Ordinal;
+	int Hint;
 };
 
 struct ImportedSymbol {
@@ -305,13 +306,12 @@ private:
 	PBYTE _address{ nullptr };
 	HMODULE _module{ nullptr };
 	HANDLE _hMemMap{ nullptr };
+	HANDLE _hFile{ INVALID_HANDLE_VALUE };
 	IMAGE_DOS_HEADER* _dosHeader;
 	IMAGE_FILE_HEADER* _fileHeader;
 	IMAGE_SECTION_HEADER* _sections;
 	IMAGE_OPTIONAL_HEADER32* _opt32{ nullptr };
 	IMAGE_OPTIONAL_HEADER64* _opt64{ nullptr };
-	PLOADED_IMAGE _image;
-	LOADED_IMAGE _ximage;
 	CComPtr<IMetaDataImport> _spMetadata;
 	std::wstring _path;
 	mutable HMODULE _resModule{ nullptr };

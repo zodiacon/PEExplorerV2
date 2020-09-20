@@ -8,28 +8,21 @@
 #pragma comment(lib, "imagehlp")
 
 PEParser::PEParser(const wchar_t* path) : _path(path) {
-	USES_CONVERSION;
-	if(!::MapAndLoad(W2CA(path), nullptr, &_ximage, FALSE, TRUE)) {
-		auto hFile = ::CreateFile(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
-		if (hFile == INVALID_HANDLE_VALUE)
-			return;
-		_hMemMap = ::CreateFileMapping(hFile, nullptr, PAGE_READONLY, 0, 0, nullptr);
-		::CloseHandle(hFile);
-		if (!_hMemMap)
-			return;
+	_hFile = ::CreateFile(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
+	if (_hFile == INVALID_HANDLE_VALUE)
+		return;
+	_hMemMap = ::CreateFileMapping(_hFile, nullptr, PAGE_READONLY, 0, 0, nullptr);
+	if (!_hMemMap)
+		return;
 
-		_address = (PBYTE)::MapViewOfFile(_hMemMap, FILE_MAP_READ, 0, 0, 0);
-		if (!_address)
-			return;
-	}
-	else {
-		_image = &_ximage;
-		_address = _image->MappedAddress;
-	}
+	_address = (PBYTE)::MapViewOfFile(_hMemMap, FILE_MAP_READ, 0, 0, 0);
+	if (!_address)
+		return;
+
 	CheckValidity();
 	if (IsValid() && IsManaged()) {
 		CComPtr<IMetaDataDispenser> spDispenser;
-		auto hr = ::CoCreateInstance(CLSID_CorMetaDataDispenser, nullptr, CLSCTX_ALL, 
+		auto hr = ::CoCreateInstance(CLSID_CorMetaDataDispenser, nullptr, CLSCTX_ALL,
 			IID_IMetaDataDispenser, reinterpret_cast<void**>(&spDispenser));
 		if (SUCCEEDED(hr)) {
 			hr = spDispenser->OpenScope(path, ofRead, IID_IMetaDataImport, reinterpret_cast<IUnknown**>(&_spMetadata));
@@ -44,8 +37,8 @@ PEParser::~PEParser() {
 		::UnmapViewOfFile(_address);
 		::CloseHandle(_hMemMap);
 	}
-	else if (_image)
-		::UnMapAndLoad(_image);
+	if (_hFile != INVALID_HANDLE_VALUE)
+		::CloseHandle(_hFile);
 }
 
 bool PEParser::IsValid() const {
@@ -130,28 +123,30 @@ std::vector<ExportedSymbol> PEParser::GetExports() const {
 
 	auto names = (PBYTE)(data->AddressOfNames != 0 ? GetAddress(data->AddressOfNames) : nullptr);
 	auto ordinals = (PBYTE)(data->AddressOfNameOrdinals != 0 ? GetAddress(data->AddressOfNameOrdinals) : nullptr);
-	auto functions = GetAddress(data->AddressOfFunctions);
+	auto functions = (PDWORD)GetAddress(data->AddressOfFunctions);
 	char undecorated[1 << 10];
 	auto ordinalBase = data->Base;
 
 	for (DWORD i = 0; i < data->NumberOfNames; i++) {
 		ExportedSymbol symbol;
+		symbol.Hint = i;
+		int ordinal = i;
+		if (ordinals) {
+			symbol.Ordinal = ordinal = *(USHORT*)(ordinals + i * 2) + (USHORT)ordinalBase;
+		}
 		if (names) {
 			auto offset = *(ULONG*)(names + i * 4);
 			symbol.Name = (PCSTR)GetAddress(offset);
 			if (::UnDecorateSymbolName(symbol.Name.c_str(), undecorated, sizeof(undecorated), 0))
 				symbol.UndecoratedName = undecorated;
 		}
-		auto address = *(DWORD*)((PBYTE)functions + i * 4);
+		auto address = *(functions + ordinal - ordinalBase);
 		symbol.Address = address;
 		auto offset = RvaToFileOffset(address);
-		if (offset > dir->VirtualAddress&& offset < dir->VirtualAddress + dir->Size) {
+		if (offset > dir->VirtualAddress && offset < dir->VirtualAddress + dir->Size) {
 			symbol.ForwardName = (PCSTR)GetAddress(address);
 		}
 
-		if (ordinals) {
-			symbol.Ordinal = *(USHORT*)(ordinals + i * 2) + ordinalBase;
-		}
 		else {
 			symbol.Ordinal = 0xffff;
 		}
@@ -244,7 +239,7 @@ SubsystemType PEParser::GetSubsystemType() const {
 
 IMAGE_COR20_HEADER* PEParser::GetCLRHeader() const {
 	auto dir = GetDataDirectory(IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR);
-	if(dir->VirtualAddress == 0 || dir->Size == 0)
+	if (dir->VirtualAddress == 0 || dir->Size == 0)
 		return nullptr;
 
 	auto header = static_cast<IMAGE_COR20_HEADER*>(GetAddress(dir->VirtualAddress));
@@ -255,7 +250,7 @@ CLRMetadataParser* PEParser::GetCLRParser() const {
 	if (!IsManaged())
 		return nullptr;
 
-	if(_clrParser == nullptr)
+	if (_clrParser == nullptr)
 		_clrParser = std::make_unique<CLRMetadataParser>(_spMetadata);
 	return _clrParser.get();
 }
@@ -290,7 +285,7 @@ std::vector<std::pair<DWORD, WIN_CERTIFICATE>> PEParser::EnumCertificates() cons
 	std::vector<std::pair<DWORD, WIN_CERTIFICATE>> certs;
 	DWORD count;
 	DWORD indices[64];
-	if (!::ImageEnumerateCertificates(_image->hFile, CERT_SECTION_TYPE_ANY, &count, indices, _countof(indices)))
+	if (!::ImageEnumerateCertificates(_hFile, CERT_SECTION_TYPE_ANY, &count, indices, _countof(indices)))
 		return certs;
 
 	if (count == 0)
@@ -299,7 +294,7 @@ std::vector<std::pair<DWORD, WIN_CERTIFICATE>> PEParser::EnumCertificates() cons
 	certs.reserve(count);
 	WIN_CERTIFICATE wc;
 	for (DWORD i = 0; i < count; i++) {
-		if (!::ImageGetCertificateHeader(_image->hFile, indices[i], &wc))
+		if (!::ImageGetCertificateHeader(_hFile, indices[i], &wc))
 			continue;
 		certs.push_back({ indices[i], wc });
 	}
@@ -334,14 +329,11 @@ void PEParser::CheckValidity() {
 		_sections = (PIMAGE_SECTION_HEADER)(_fileHeader + 1);
 	}
 	else {
-		ATLASSERT(_image);
-		auto ntHeader = _image->FileHeader;
-		if (ntHeader->Signature != IMAGE_NT_SIGNATURE)
-			return;
+		auto ntHeader = ::ImageNtHeader(_address);
 		_fileHeader = &ntHeader->FileHeader;
-		_opt64 = &_image->FileHeader->OptionalHeader;
-		_opt32 = (PIMAGE_OPTIONAL_HEADER32)&_image->FileHeader->OptionalHeader;
-		_sections = _image->Sections;
+		_opt64 = &ntHeader->OptionalHeader;
+		_opt32 = (PIMAGE_OPTIONAL_HEADER32)_opt64;
+		_sections = (PIMAGE_SECTION_HEADER)((BYTE*)_opt64 + _fileHeader->SizeOfOptionalHeader);
 	}
 	_valid = true;
 }
@@ -407,7 +399,7 @@ std::vector<ResourceType> PEParser::EnumResources() const {
 		ResourceType* Current;
 	} context;
 
-	if(_resModule == nullptr)
+	if (_resModule == nullptr)
 		_resModule = ::LoadLibraryEx(_path.c_str(), nullptr, LOAD_LIBRARY_AS_IMAGE_RESOURCE | LOAD_LIBRARY_AS_DATAFILE);
 	if (_resModule == nullptr)
 		return types;
@@ -463,7 +455,7 @@ bool PEParser::GetImportAddressTable() const {
 		return false;
 
 	auto table = static_cast<IMAGE_THUNK_DATA64*>(GetAddress(dir->VirtualAddress));
-	
+
 	return true;
 }
 
@@ -479,7 +471,7 @@ std::vector<ULONG> PEParser::GetTlsInfo() const {
 		return tls;
 
 	auto data64 = (IMAGE_TLS_DIRECTORY64*)GetAddress(dir->VirtualAddress);
-	
+
 
 	return std::vector<ULONG>();
 }
