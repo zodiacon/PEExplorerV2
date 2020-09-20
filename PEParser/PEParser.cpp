@@ -134,6 +134,9 @@ std::vector<ExportedSymbol> PEParser::GetExports() const {
 		if (ordinals) {
 			symbol.Ordinal = ordinal = *(USHORT*)(ordinals + i * 2) + (USHORT)ordinalBase;
 		}
+		else {
+			symbol.Ordinal = 0xffff;
+		}
 		if (names) {
 			auto offset = *(ULONG*)(names + i * 4);
 			symbol.Name = (PCSTR)GetAddress(offset);
@@ -145,10 +148,6 @@ std::vector<ExportedSymbol> PEParser::GetExports() const {
 		auto offset = RvaToFileOffset(address);
 		if (offset > dir->VirtualAddress && offset < dir->VirtualAddress + dir->Size) {
 			symbol.ForwardName = (PCSTR)GetAddress(address);
-		}
-
-		else {
-			symbol.Ordinal = 0xffff;
 		}
 		exports.push_back(std::move(symbol));
 	}
