@@ -54,6 +54,8 @@
 #define IDI_FIELD                       244
 #define IDI_CCTOR                       245
 #define IDI_CTOR                        246
+#define IDC_SYSLINK1                    1000
+#define IDC_LINK                        1000
 #define ID_VIEW_TREEPANE                32774
 #define ID_OPTIONS_ALWAYSONTOP          32775
 #define ID_VIEW_SUMMARY                 32777
@@ -79,7 +81,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        247
 #define _APS_NEXT_COMMAND_VALUE         32806
-#define _APS_NEXT_CONTROL_VALUE         1000
+#define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           102
 #endif
 #endif

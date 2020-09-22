@@ -220,14 +220,16 @@ IDI_CTOR                ICON                    "res\\Managed\\method-new.ico"
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 187, 102
+IDD_ABOUTBOX DIALOGEX 0, 0, 187, 108
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About PE Explorer"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,68,81,50,14
-    CTEXT           "PE Explorer v2.02\n\n(C)2019-2020 Pavel Yosifovich",IDC_STATIC,42,26,104,32
+    DEFPUSHBUTTON   "OK",IDOK,68,87,50,14
+    CTEXT           "PE Explorer v2.03\n\n(C)2019-2020 Pavel Yosifovich",IDC_STATIC,42,18,104,32
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
+    CONTROL         "<a>https://github.com/zodiacon/peexplorerv2</a>",IDC_LINK,
+                    "SysLink",WS_TABSTOP,29,60,138,14
 END
 
 
@@ -244,7 +246,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 180
         TOPMARGIN, 7
-        BOTTOMMARGIN, 95
+        BOTTOMMARGIN, 101
     END
 END
 #endif    // APSTUDIO_INVOKED
