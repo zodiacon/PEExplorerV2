@@ -29,16 +29,19 @@ struct ImportedLibrary {
 
 enum class SubsystemType : short {
 	Unknown,
-	Native,
-	WindowsGUI,
-	WindowsCUI,
+	Native = 1,
+	WindowsGUI = 2,
+	WindowsCUI = 3,
 	PosixCUI = 7,
+	NativeWin9x = 8,
 	WindowsCEGUI = 9,
 	EfiApplication = 10,
 	EfiBootServiceDriver = 11,
 	EfiRuntimeDriver = 12,
 	EfiROM = 13,
-	XBOX = 14
+	XBOX = 14,
+	BootApplication = 16,
+	XBoxCodeCatalog = 17,
 };
 
 enum class CfgFlags : uint32_t {

@@ -18,6 +18,7 @@ PCWSTR PEStrings::SubsystemTypeToString(SubsystemType type) {
 		case SubsystemType::EfiRuntimeDriver: return L"EFI Runtime Driver";
 		case SubsystemType::EfiROM: return L"EFI ROM";
 		case SubsystemType::XBOX: return L"XBOX";
+		case SubsystemType::BootApplication: return L"Boot Application";
 	}
 	return L"(Unknown)";
 }

@@ -168,6 +168,7 @@ std::vector<ImportedLibrary> PEParser::GetImports() const {
 	auto imports = static_cast<IMAGE_IMPORT_DESCRIPTOR*>(GetAddress(dir->VirtualAddress));
 	auto inc = IsPe64() ? 8 : 4;
 	char undecorated[1 << 10];
+	libs.reserve(32);
 
 	for (;;) {
 		auto offset = imports->OriginalFirstThunk == 0 ? imports->FirstThunk : imports->OriginalFirstThunk;
@@ -291,8 +292,8 @@ std::vector<std::pair<DWORD, WIN_CERTIFICATE>> PEParser::EnumCertificates() cons
 		return certs;
 
 	certs.reserve(count);
-	WIN_CERTIFICATE wc;
 	for (DWORD i = 0; i < count; i++) {
+		WIN_CERTIFICATE wc{};
 		if (!::ImageGetCertificateHeader(_hFile, indices[i], &wc))
 			continue;
 		certs.push_back({ indices[i], wc });
@@ -323,6 +324,10 @@ void PEParser::CheckValidity() {
 
 	_dosHeader = reinterpret_cast<IMAGE_DOS_HEADER*>(_address);
 	if (_dosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
+		// treat as invalid
+		_valid = false;
+		return;
+
 		// perhaps object file / static library
 		_fileHeader = (IMAGE_FILE_HEADER*)_address;
 		_sections = (PIMAGE_SECTION_HEADER)(_fileHeader + 1);
@@ -471,6 +476,5 @@ std::vector<ULONG> PEParser::GetTlsInfo() const {
 
 	auto data64 = (IMAGE_TLS_DIRECTORY64*)GetAddress(dir->VirtualAddress);
 
-
-	return std::vector<ULONG>();
+	return tls;
 }
