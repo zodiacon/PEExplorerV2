@@ -30,7 +30,7 @@ LRESULT CHexView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_hex.SetBufferManager(m_buffer.get());
 	m_hex.SetReadOnly(true);
 
-	m_toolbar.Create(*this, rcDefault, nullptr, ATL_SIMPLE_TOOLBAR_STYLE | WS_BORDER | TBSTYLE_FLAT, WS_EX_CLIENTEDGE);
+	m_toolbar.Create(*this, rcDefault, nullptr, ATL_SIMPLE_TOOLBAR_STYLE | WS_BORDER | TBSTYLE_FLAT, 0);
 	CImageList tbImages;
 	tbImages.Create(24, 24, ILC_COLOR32 | ILC_COLOR, 8, 4);
 	m_toolbar.SetImageList(tbImages);
