@@ -10,7 +10,7 @@
 
 CAppModule _Module;
 
-int Run(LPTSTR /*lpstrCmdLine*/ = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
+int Run(LPTSTR lpstrCmdLine, int nCmdShow) {
 	CMessageLoop theLoop;
 	_Module.AddMessageLoop(&theLoop);
 
@@ -19,6 +19,21 @@ int Run(LPTSTR /*lpstrCmdLine*/ = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 	if (frame->CreateEx() == nullptr) {
 		ATLTRACE(_T("Main window creation failed!\n"));
 		return 0;
+	}
+
+	// Process the commandline:
+	// Open the first given parameter as a file
+	// If the param starts with double-quotes, make sure to read the entire parameter, including spaces
+	auto len = _tcslen(lpstrCmdLine);
+	if (len > 0) {
+		CString fileToOpen(lpstrCmdLine);
+		if (fileToOpen[0] == '"') {
+			fileToOpen.Delete(0, 1);
+			// Search for the closing quote:
+			auto idxStart = fileToOpen.Find(_T('"'));
+			fileToOpen.Delete(idxStart, fileToOpen.GetLength() - idxStart);
+		}
+		frame->OpenDocument(fileToOpen, false);
 	}
 
 	frame->ShowWindow(nCmdShow);

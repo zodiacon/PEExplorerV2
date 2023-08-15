@@ -83,13 +83,15 @@ private:
 	template<typename T>
 	CTreeItem InsertTreeItem(PCWSTR text, int image, int selectedImage, T data = 0, HTREEITEM hParent = TVI_ROOT, HTREEITEM hAfter = TVI_LAST);
 
-	// IMainFrame
+public:
+	// IMainFrame overrides:
 	UINT ShowContextMenu(HMENU menu, const POINT& pt, DWORD flags) override;
 	CTreeItem CreateHexView(TreeNodeType type, PCWSTR title, LPARAM param) override;
 	CTreeItem CreateAssemblyView(const ExportedSymbol& symbol) override;
 	bool OpenDocument(PCWSTR name, bool newWindow) override;
 	CTreeItem CreateTypeMembersView(const ManagedType& type) override;
 
+private:
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
