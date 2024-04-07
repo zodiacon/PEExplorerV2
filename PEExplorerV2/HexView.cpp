@@ -17,11 +17,13 @@ bool CHexView::DoExport(PCWSTR filename) const {
 		return false;
 
 	auto buffer = m_hex.GetBufferManager();
+	BOOL result;
 	DWORD written;
-	if (!::WriteFile(hFile, buffer->GetRawData(0), (DWORD)buffer->GetSize(), &written, nullptr))
+	result = ::WriteFile(hFile, buffer->GetRawData(0), (DWORD)buffer->GetSize(), &written, nullptr);
+	::CloseHandle(hFile);
+	if (!result)
 		return false;
 
-	::CloseHandle(hFile);
 	return true;
 }
 
